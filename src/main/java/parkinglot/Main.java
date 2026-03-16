@@ -50,7 +50,7 @@ public class Main {
         // 5. Book a Spot (UC-04) & Generate Ticket (UC-07)
         System.out.println("\n--- Booking Process ---");
         if (firstSpotForTest != null && firstSpotForTest.isFree()) {
-            firstSpotForTest.book();
+            firstSpotForTest.book(1);
             System.out.println("Spot " + firstSpotForTest.getId() + " Status: RESERVED");
             firstFloorForTest.updateDisplay(); // Triggers DisplayBoard observer
             

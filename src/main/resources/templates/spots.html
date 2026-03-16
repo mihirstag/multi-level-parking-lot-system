@@ -2,111 +2,179 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Live Parking Map</title>
+    <title>Live Map - Park Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; padding-bottom: 100px; }
-        .floor-container { background: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0px 4px 15px rgba(0,0,0,0.05); }
-        .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 12px; margin-top: 15px; }
+        :root {
+            --bg-color: #0b0c10;
+            --surface: rgba(30, 31, 38, 0.4);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary: #66fcf1;
+            --primary-glow: rgba(102, 252, 241, 0.6);
+            --text-main: #ffffff;
+            --text-muted: #8b8e98;
+            --available: rgba(102, 252, 241, 0.1);
+            --available-border: rgba(102, 252, 241, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { 
+            background-color: var(--bg-color); color: var(--text-main); 
+            background-image: radial-gradient(circle at top right, rgba(69, 162, 158, 0.1), transparent 40%);
+            min-height: 100vh;
+        }
+        
+        /* Glass Navbar (Unified) */
+        .navbar { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 20px 6%; 
+            background: rgba(11, 12, 16, 0.6);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none;}
+        .logo span { color: var(--primary); }
+        .nav-links { display: flex; gap: 40px; font-size: 15px; font-weight: 500;}
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+        .nav-actions { display: flex; gap: 15px; align-items: center;}
+        
+        .btn-outline-danger { padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255, 107, 107, 0.3); color: #ff6b6b; text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.3s;}
+        .btn-outline-danger:hover { background: rgba(255, 107, 107, 0.1); border-color: #ff6b6b; }
+
+        .main-container { padding: 40px 6%; padding-bottom: 120px; }
+
+        .title-area h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px;}
+        .title-area h1 span { color: var(--primary); }
+        .title-area p { color: var(--text-muted); font-size: 16px; margin-bottom: 40px;}
+
+        /* Floors Grid */
+        .floor-container { 
+            background: var(--surface); backdrop-filter: blur(10px);
+            padding: 30px; border-radius: 20px; border: 1px solid var(--surface-border);
+            margin-bottom: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: fadeUp 0.6s ease-out forwards;
+            opacity: 0; transform: translateY(20px);
+        }
+        .floor-container:nth-child(2) { animation-delay: 0.1s; }
+        .floor-container:nth-child(3) { animation-delay: 0.2s; }
+        
+        .floor-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; border-bottom: 1px solid var(--surface-border); padding-bottom: 15px;}
+        .floor-header h2 { font-size: 20px; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 10px;}
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 12px; }
         
         /* Spot Buttons */
         .spot-btn { 
-            border: 2px solid transparent; padding: 15px 5px; text-align: center; border-radius: 6px; 
-            font-weight: bold; font-size: 11px; color: white; cursor: pointer; transition: 0.2s; width: 100%;
+            aspect-ratio: 1; border-radius: 12px; font-weight: 600; font-size: 13px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
+            overflow: hidden;
         }
-        .spot-btn:hover:not(:disabled) { transform: scale(1.05); }
         
-        /* Status Colors */
-        .AVAILABLE { background-color: #2ecc71; } 
-        .RESERVED { background-color: #f1c40f; color: #2c3e50; cursor: not-allowed; opacity: 0.7;} 
+        .AVAILABLE { background: var(--available); border: 1px solid var(--available-border); color: var(--primary); }
+        .AVAILABLE:hover { background: rgba(102, 252, 241, 0.2); transform: scale(1.05); box-shadow: 0 0 15px rgba(102, 252, 241, 0.2); }
         
-        /* New Selected State */
-        .SELECTED { border: 3px solid #2c3e50; transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .SELECTED { background: var(--primary); color: var(--bg-color); border: 1px solid var(--primary); transform: scale(1.05); box-shadow: 0 0 20px var(--primary-glow); }
         
-        .nav-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #34495e; color: white; text-decoration: none; border-radius: 5px; }
-        h1 { color: #2c3e50; margin-bottom: 5px;}
-        
-        /* Sticky Bottom Checkout Bar (Hidden by default) */
+        /* Sticky Glass Checkout Bar */
         .checkout-cart {
-            position: fixed; bottom: 0; left: 0; width: 100%; background: #2c3e50; color: white;
-            padding: 20px 50px; display: none; justify-content: space-between; align-items: center;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.2); z-index: 1000;
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            background: rgba(11, 12, 16, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--surface-border);
+            padding: 20px 6%; display: none; justify-content: space-between; align-items: center;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5); z-index: 1000;
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .cart-info { font-size: 18px; font-weight: bold; }
-        .cart-controls { display: flex; gap: 20px; align-items: center; }
-        .cart-controls label { font-size: 14px; }
-        .cart-controls input { padding: 8px; border-radius: 5px; border: none; width: 80px; text-align: center; font-weight: bold;}
-        .btn-checkout { background: #e67e22; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px;}
-        .btn-checkout:hover { background: #d35400; }
+        .cart-info { display: flex; flex-direction: column; gap: 4px;}
+        .cart-info .title { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
+        .cart-info .detail { font-size: 20px; font-weight: 700; color: var(--primary); }
+        .cart-info .list { font-size: 13px; color: var(--text-muted); margin-top: 4px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        
+        .cart-controls { display: flex; gap: 24px; align-items: center; }
+        .duration-picker { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 30px; border: 1px solid var(--surface-border);}
+        .duration-picker label { font-size: 14px; color: var(--text-muted); font-weight: 500;}
+        .duration-picker input { background: transparent; border: none; color: white; width: 40px; font-size: 16px; font-weight: 600; text-align: center; outline: none; }
+        
+        .btn-checkout { background: linear-gradient(135deg, var(--primary), #45a29e); color: var(--bg-color); border: none; padding: 14px 32px; border-radius: 30px; cursor: pointer; font-weight: 700; font-size: 15px; box-shadow: 0 4px 15px var(--primary-glow); transition: 0.3s; }
+        .btn-checkout:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--primary-glow); }
+
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <a href="/dashboard/driver" class="nav-btn">← Back to Dashboard</a>
-    
-    <h1>Live Parking Map</h1>
-    <p style="color: #666; margin-bottom: 25px;">Select one or more available spots to reserve your time block.</p>
+    <!-- Unified Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Park<span> Manager</span></a>
+        <div class="nav-links">
+            <a href="/dashboard/driver">Dashboard</a>
+            <a href="/spots" class="active">Live Map</a>
+            <a href="/bookings">My Bookings</a>
+        </div>
+        <div class="nav-actions">
+            <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;" th:text="${session.userEmail}"></span>
+            <a href="/logout" class="btn-outline-danger">Sign Out</a>
+        </div>
+    </nav>
 
-    <div th:each="floor : ${floors}" class="floor-container">
-        <h2 th:text="'Floor ' + ${floor.floorNumber}">Floor X</h2>
-        
-        <div class="grid">
-            <div th:each="spot : ${floor.spots}">
-                
-                <button type="button" 
-                        th:if="${spot.status.name() == 'AVAILABLE'}" 
+    <div class="main-container">
+        <div class="title-area">
+            <h1>Select <span>Spots</span></h1>
+            <p>Tap available spots to add them to your reservation queue. Booked spots are automatically removed from this view.</p>
+        </div>
+
+        <div th:each="floor : ${floors}" class="floor-container">
+            <div class="floor-header">
+                <h2 th:text="'Level ' + ${floor.floorNumber}">Level X</h2>
+                <span style="font-size: 13px; color: var(--text-muted); padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,0.05);">Zone Alpha</span>
+            </div>
+            
+            <div class="grid">
+                <!-- Only available spots are rendered. Booked spots are completely removed. -->
+                <button th:each="spot : ${floor.spots}" 
+                        type="button" 
+                        th:if="${spot.free}" 
                         class="spot-btn AVAILABLE" 
                         th:text="${spot.id}"
                         th:attr="onclick=|toggleSpot('${spot.id}', this)|">
                 </button>
-
-                <button type="button" 
-                        th:if="${spot.status.name() == 'RESERVED'}" 
-                        class="spot-btn RESERVED" disabled 
-                        th:text="${spot.id} + ' (Booked)'">
-                </button>
-
             </div>
         </div>
     </div>
 
     <div class="checkout-cart" id="checkout-cart">
         <div class="cart-info">
-            Spots Selected: <span id="spot-count">0</span>
-            <div style="font-size: 12px; color: #bdc3c7; font-weight: normal; margin-top: 5px;" id="spot-list"></div>
+            <div class="title">Selected Slots</div>
+            <div class="detail"><span id="spot-count">0</span> Spots</div>
+            <div class="list" id="spot-list"></div>
         </div>
         
         <form action="/checkout" method="post" class="cart-controls">
             <input type="hidden" name="selectedSpots" id="selected-spots-input" required>
-            
-            <div>
-                <label for="hours">Duration (Hours): </label>
+            <div class="duration-picker">
+                <label for="hours">Duration (hrs)</label>
                 <input type="number" name="hours" id="hours" min="1" max="24" value="1" required>
             </div>
-            
-            <button type="submit" class="btn-checkout">Proceed to Checkout</button>
+            <button type="submit" class="btn-checkout">Review & Pay →</button>
         </form>
     </div>
 
     <script>
         let selectedSpots = [];
-
         function toggleSpot(spotId, btnElement) {
             const index = selectedSpots.indexOf(spotId);
-            
-            // If already selected, remove it
             if (index > -1) {
                 selectedSpots.splice(index, 1);
                 btnElement.classList.remove('SELECTED');
-            } 
-            // If not selected, add it
-            else {
+            } else {
                 selectedSpots.push(spotId);
                 btnElement.classList.add('SELECTED');
             }
-            
             updateCart();
         }
-
         function updateCart() {
             const cart = document.getElementById('checkout-cart');
             const countSpan = document.getElementById('spot-count');
@@ -114,14 +182,12 @@
             const hiddenInput = document.getElementById('selected-spots-input');
 
             if (selectedSpots.length > 0) {
-                cart.style.display = 'flex'; // Show the bar
+                cart.style.display = 'flex'; 
                 countSpan.innerText = selectedSpots.length;
                 listDiv.innerText = selectedSpots.join(', ');
-                
-                // Joins array into a comma-separated string for Spring Boot to read
                 hiddenInput.value = selectedSpots.join(','); 
             } else {
-                cart.style.display = 'none'; // Hide the bar if empty
+                cart.style.display = 'none';
             }
         }
     </script>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Bookings - Park Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface: rgba(30, 31, 38, 0.4);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary: #66fcf1;
+            --primary-glow: rgba(102, 252, 241, 0.6);
+            --text-main: #ffffff;
+            --text-muted: #8b8e98;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { 
+            background-color: var(--bg-color); color: var(--text-main); 
+            background-image: radial-gradient(circle at top right, rgba(69, 162, 158, 0.1), transparent 40%);
+            min-height: 100vh;
+        }
+        
+        /* Glass Navbar (Unified) */
+        .navbar { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 20px 6%; 
+            background: rgba(11, 12, 16, 0.6);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none;}
+        .logo span { color: var(--primary); }
+        .nav-links { display: flex; gap: 40px; font-size: 15px; font-weight: 500;}
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+        .nav-actions { display: flex; gap: 15px; align-items: center;}
+        
+        .btn-outline-danger { padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255, 107, 107, 0.3); color: #ff6b6b; text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.3s;}
+        .btn-outline-danger:hover { background: rgba(255, 107, 107, 0.1); border-color: #ff6b6b; }
+
+        .main-container { padding: 40px 6%; }
+
+        .title-area h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px;}
+        .title-area h1 span { color: var(--primary); }
+        .title-area p { color: var(--text-muted); font-size: 16px; margin-bottom: 40px;}
+
+        /* Bookings List */
+        .bookings-grid { display: flex; flex-direction: column; gap: 20px; }
+        .booking-card {
+            background: var(--surface); backdrop-filter: blur(10px);
+            border: 1px solid var(--surface-border);
+            padding: 25px 30px; border-radius: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+        .booking-card:hover { border-color: rgba(102, 252, 241, 0.3); box-shadow: 0 15px 40px rgba(0,0,0,0.4); transform: translateY(-3px);}
+        
+        .b-left { display: flex; flex-direction: column; gap: 8px; }
+        .b-ticket { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;}
+        .b-spot { font-size: 24px; font-weight: 800; color: var(--text-main); }
+        .b-time { font-size: 14px; color: var(--text-muted); }
+        
+        .b-status { 
+            padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .status-paid { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2); }
+        .status-reserved { background: rgba(102, 252, 241, 0.1); color: var(--primary); border: 1px solid rgba(102, 252, 241, 0.2); }
+        .status-expired { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.2); }
+
+        .empty-state { text-align: center; padding: 60px 0; color: var(--text-muted); }
+        .empty-state h3 { font-size: 20px; color: var(--text-main); margin-bottom: 10px;}
+        .empty-state a { display: inline-block; margin-top: 20px; color: var(--bg-color); background: var(--primary); padding: 12px 24px; border-radius: 30px; text-decoration: none; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <!-- Unified Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Park<span> Manager</span></a>
+        <div class="nav-links">
+            <a href="/dashboard/driver">Dashboard</a>
+            <a href="/spots">Live Map</a>
+            <a href="/bookings" class="active">My Bookings</a>
+        </div>
+        <div class="nav-actions">
+            <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;" th:text="${session.userEmail}"></span>
+            <a href="/logout" class="btn-outline-danger">Sign Out</a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="title-area">
+            <h1>My <span>Bookings</span></h1>
+            <p>View all your past and active parking reservations.</p>
+        </div>
+
+        <div th:if="${tickets.isEmpty()}" class="empty-state">
+            <h3>No Bookings Found</h3>
+            <p>You haven't reserved any parking spots yet.</p>
+            <a href="/spots">Find a Spot</a>
+        </div>
+
+        <div th:unless="${tickets.isEmpty()}" class="bookings-grid">
+            <div th:each="ticket : ${tickets}" class="booking-card">
+                <div class="b-left">
+                    <div class="b-ticket" th:text="${ticket.ticketId}">TKT-XXXXXX</div>
+                    <div class="b-spot" th:text="'Spot ' + ${ticket.spotId}">Spot F1-C1</div>
+                    <div class="b-time" th:text="${ticket.timestamp}">2026-03-XX</div>
+                </div>
+                <div>
+                    <span th:class="'b-status status-' + ${#strings.toLowerCase(ticket.status)}" th:text="${ticket.status}">PAID</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

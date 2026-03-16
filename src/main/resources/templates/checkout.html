@@ -2,38 +2,121 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Secure Checkout</title>
+    <title>Secure Checkout - Park Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #1e1d2b; color: #fff; padding: 50px; text-align: center; }
-        .checkout-card { background: #2a2935; padding: 40px; border-radius: 12px; max-width: 450px; margin: auto; box-shadow: 0px 10px 30px rgba(0,0,0,0.3); border: 1px solid #383747;}
-        .price { font-size: 42px; color: #2ecc71; font-weight: bold; margin: 20px 0; }
-        .spot-details { font-size: 16px; color: #a0a0b0; margin-bottom: 30px; line-height: 1.6; background: #1e1d2b; padding: 15px; border-radius: 8px;}
-        .pay-btn { background-color: #7b61ff; color: white; border: none; padding: 15px 30px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; transition: 0.3s; }
-        .pay-btn:hover { background-color: #694ce6; }
-        .cancel-link { display: inline-block; margin-top: 20px; color: #ff4757; text-decoration: none; font-size: 14px; }
-        h2 { margin-bottom: 15px; }
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(30, 31, 38, 0.7);
+            --primary-accent: #66fcf1;
+            --secondary-accent: #45a29e;
+            --text-main: #ffffff;
+            --text-muted: #c5c6c7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { 
+            background-color: var(--bg-color); color: var(--text-main); 
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% 10%, rgba(69, 162, 158, 0.15), transparent 60%);
+        }
+        /* Glass Navbar (Unified) */
+        .navbar { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 20px 6%; 
+            background: rgba(11, 12, 16, 0.6);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none;}
+        .logo span { color: var(--primary-accent); }
+        .nav-links { display: flex; gap: 40px; font-size: 15px; font-weight: 500;}
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-accent); }
+        .nav-actions { display: flex; gap: 15px; align-items: center;}
+        
+        .main-content { display: flex; align-items: center; justify-content: center; padding: 60px 20px; min-height: calc(100vh - 80px); }
+
+        .checkout-card { 
+            background: rgba(30, 31, 38, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 50px; border-radius: 24px; max-width: 450px; width: 100%; text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        h2 { font-size: 24px; font-weight: 800; margin-bottom: 30px; }
+        
+        .price-box {
+            padding: 30px 0; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px;
+        }
+        .price { font-size: 56px; color: var(--primary-accent); font-weight: 800; line-height: 1; letter-spacing: -2px;}
+        .price span { font-size: 24px; vertical-align: super; }
+        
+        .spot-details { 
+            font-size: 15px; color: var(--text-main); margin-bottom: 30px; line-height: 1.6; 
+            background: rgba(0,0,0,0.2); padding: 20px; border-radius: 16px; text-align: left;
+        }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .detail-row:last-child { margin-bottom: 0; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); color: var(--text-muted); font-size: 13px;}
+        
+        .pay-btn { 
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent)); 
+            color: var(--bg-color); border: none; padding: 18px; font-size: 16px; font-weight: 700; 
+            border-radius: 12px; cursor: pointer; width: 100%; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(102, 252, 241, 0.2);
+        }
+        .pay-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(102, 252, 241, 0.3); }
+        
+        .cancel-link { display: inline-block; margin-top: 25px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s;}
+        .cancel-link:hover { color: white; }
     </style>
 </head>
 <body>
 
-    <div class="checkout-card">
-        <h2>Booking Summary</h2>
+    <!-- Unified Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Park<span> Manager</span></a>
+        <div class="nav-links">
+            <a href="/dashboard/driver">Dashboard</a>
+            <a href="/bookings">My Bookings</a>
+            <a href="/spots">Live Map</a>
+        </div>
+        <div class="nav-actions">
+            <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;" th:text="${session.userEmail}"></span>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="checkout-card">
+            <h2>Complete Reservation</h2>
         
-        <div class="spot-details">
-            Reserving <strong><span th:text="${spotCount}"></span> spot(s)</strong> for <strong><span th:text="${hours}"></span> hour(s)</strong>.<br>
-            <span style="font-size: 13px; color: #7b61ff;">Spots: <span th:text="${selectedSpots}"></span></span>
+        <div class="price-box">
+            <div class="price"><span>₹</span><span th:text="${fee}" style="font-size: inherit; vertical-align: baseline;"></span></div>
+            <div style="font-size: 14px; color: var(--text-muted); margin-top: 10px; font-weight: 500;">Total Amount Due</div>
         </div>
         
-        <div class="price">
-            ₹<span th:text="${fee}"></span>
+        <div class="spot-details">
+            <div class="detail-row">
+                <span style="color: var(--text-muted);">Spots Reserved</span>
+                <strong th:text="${spotCount}"></strong>
+            </div>
+            <div class="detail-row">
+                <span style="color: var(--text-muted);">Duration</span>
+                <strong><span th:text="${hours}"></span> hr(s)</strong>
+            </div>
+            <div class="detail-row">
+                <span>Slot IDs</span>
+                <span th:text="${selectedSpots}"></span>
+            </div>
         </div>
         
         <form th:action="@{/pay}" method="post">
             <input type="hidden" name="selectedSpots" th:value="${selectedSpots}" />
-            <button type="submit" class="pay-btn">Confirm & Pay</button>
+            <input type="hidden" name="hours" th:value="${hours}" />
+            <button type="submit" class="pay-btn">Confirm & Pay Using Secure Gateway</button>
         </form>
         
-        <a href="/spots" class="cancel-link">Cancel Checkout</a>
+        <a href="/spots" class="cancel-link">Cancel and return to map</a>
     </div>
 
 </body>

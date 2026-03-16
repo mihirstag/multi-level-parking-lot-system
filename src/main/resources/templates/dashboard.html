@@ -2,28 +2,115 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Driver Portal - PARK.SYS</title>
+    <title>Driver Portal - Park Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #1e1d2b; color: white; padding: 40px; text-align: center; }
-        .container { background: #2a2935; padding: 50px; border-radius: 16px; max-width: 500px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid #383747;}
-        .btn { display: inline-block; padding: 15px 30px; background-color: #7b61ff; color: white; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: bold; margin-top: 20px;}
-        .btn:hover { background-color: #694ce6; }
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(30, 31, 38, 0.7);
+            --primary-accent: #66fcf1;
+            --secondary-accent: #45a29e;
+            --text-main: #ffffff;
+            --text-muted: #c5c6c7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { 
+            background-color: var(--bg-color); color: var(--text-main); 
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% 10%, rgba(69, 162, 158, 0.15), transparent 60%);
+        }
+        
+        /* Glass Navbar (Unified) */
+        .navbar { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 20px 6%; 
+            background: rgba(11, 12, 16, 0.6);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none;}
+        .logo span { color: var(--primary-accent); }
+        .nav-links { display: flex; gap: 40px; font-size: 15px; font-weight: 500;}
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-accent); }
+        .nav-actions { display: flex; gap: 15px; align-items: center;}
+        
+        .main-content { display: flex; align-items: center; justify-content: center; padding: 60px 20px; min-height: calc(100vh - 80px); }
+
+        .container { 
+            background: rgba(30, 31, 38, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 60px 40px; border-radius: 24px; max-width: 480px; width: 100%; text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);
+            animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .user-avatar {
+            width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, rgba(102, 252, 241, 0.2), rgba(69, 162, 158, 0.2));
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 2px solid rgba(102, 252, 241, 0.3);
+            color: var(--primary-accent);
+        }
+
+        h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; }
+        p { color: var(--text-muted); font-size: 16px; margin-bottom: 30px; }
+        
+        .success-banner {
+            background-color: rgba(102, 252, 241, 0.1); color: var(--primary-accent); 
+            border: 1px solid rgba(102, 252, 241, 0.3); 
+            padding: 15px; border-radius: 12px; margin-bottom: 30px; font-weight: 500; font-size: 14px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .btn-large { 
+            display: block; width: 100%; padding: 18px; 
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent)); 
+            color: var(--bg-color); border: none; border-radius: 12px; cursor: pointer; text-decoration: none; 
+            font-size: 16px; font-weight: 700; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(102, 252, 241, 0.2); margin-top: 10px;
+        }
+        .btn-large:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(102, 252, 241, 0.3); }
+
+        .btn-outline-danger { padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255, 107, 107, 0.3); color: #ff6b6b; text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.3s;}
+        .btn-outline-danger:hover { background: rgba(255, 107, 107, 0.1); border-color: #ff6b6b; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1 th:text="${systemName}">Driver Portal</h1>
-        <p style="color: #a0a0b0; margin-top: 10px;" th:text="${welcomeMessage}"></p>
-        
-        <div th:if="${param.payment != null}" style="background-color: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); padding: 15px; border-radius: 8px; margin-top: 25px;">
-            Payment Successful! Your spots are secured.
+    <!-- Unified Navbar -->
+    <nav class="navbar">
+        <a href="/" class="logo">Park<span> Manager</span></a>
+        <div class="nav-links">
+            <a href="/" class="active">Dashboard</a>
+            <a href="/spots">Live Map</a>
+            <a href="/bookings">My Bookings</a>
         </div>
-        
-        <a href="/spots" class="btn">View Live Map & Reserve Time</a>
-        
-        <br><br><br>
-        <a href="/logout" style="color: #ff4757; text-decoration: none; font-size: 14px;">Logout</a>
+        <div class="nav-actions">
+            <span style="font-size: 14px; color: var(--text-muted); font-weight: 500;" th:text="${session.userEmail}"></span>
+            <a href="/logout" class="btn-outline-danger">Sign Out</a>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="user-avatar">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            
+            <h1 th:text="${systemName}">Driver Portal</h1>
+            <p th:text="${welcomeMessage}">Welcome, user!</p>
+            
+            <div th:if="${param.payment != null}" class="success-banner">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Payment Successful! Spots secured.
+            </div>
+            
+            <a href="/spots" class="btn-large">Open Live Map & Book</a>
+        </div>
     </div>
 
 </body>

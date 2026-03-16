@@ -35,12 +35,14 @@ public class DatabaseHelper {
 
         String createTicketTable = "CREATE TABLE IF NOT EXISTS tickets (\n"
                 + " ticket_id text PRIMARY KEY,\n"
+                + " user_email text NOT NULL,\n"
                 + " spot_id text NOT NULL,\n"
                 + " status text NOT NULL,\n" 
                 + " timestamp DATETIME DEFAULT CURRENT_TIMESTAMP\n"
                 + ");";
 
         try (Connection conn = connect(); Statement stmt = conn.createStatement()) {
+            stmt.execute("DROP TABLE IF EXISTS tickets"); // Reset for schema update
             stmt.execute(createDriverTable);
             stmt.execute(createTicketTable);
         } catch (SQLException e) {
@@ -80,12 +82,13 @@ public class DatabaseHelper {
     }
 
     // --- Ticket Methods (From previous steps) ---
-    public static void saveTicket(String ticketId, String spotId, String status) {
-        String sql = "INSERT INTO tickets(ticket_id, spot_id, status) VALUES(?,?,?)";
+    public static void saveTicket(String ticketId, String userEmail, String spotId, String status) {
+        String sql = "INSERT INTO tickets(ticket_id, user_email, spot_id, status) VALUES(?,?,?,?)";
         try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, ticketId);
-            pstmt.setString(2, spotId);
-            pstmt.setString(3, status);
+            pstmt.setString(2, userEmail);
+            pstmt.setString(3, spotId);
+            pstmt.setString(4, status);
             pstmt.executeUpdate();
         } catch (SQLException e) {}
     }
@@ -97,5 +100,23 @@ public class DatabaseHelper {
             pstmt.setString(2, spotId);
             pstmt.executeUpdate();
         } catch (SQLException e) {}
+    }
+
+    public static java.util.List<java.util.Map<String, String>> getTicketsForUser(String email) {
+        java.util.List<java.util.Map<String, String>> tickets = new java.util.ArrayList<>();
+        String sql = "SELECT ticket_id, spot_id, status, timestamp FROM tickets WHERE user_email = ? ORDER BY timestamp DESC";
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, email);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                java.util.Map<String, String> ticket = new java.util.HashMap<>();
+                ticket.put("ticketId", rs.getString("ticket_id"));
+                ticket.put("spotId", rs.getString("spot_id"));
+                ticket.put("status", rs.getString("status"));
+                ticket.put("timestamp", rs.getString("timestamp"));
+                tickets.add(ticket);
+            }
+        } catch (SQLException e) {}
+        return tickets;
     }
 }

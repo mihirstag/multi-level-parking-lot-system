@@ -7,19 +7,27 @@ public class ParkingSpot {
     private String id;
     private SpotType type;
     private SpotStatus status;
+    private long expiryTimeMillis;
 
     public ParkingSpot(String id, SpotType type) {
         this.id = id;
         this.type = type;
         this.status = SpotStatus.AVAILABLE;
+        this.expiryTimeMillis = 0;
     }
 
     public boolean isFree() {
+        if (this.status == SpotStatus.RESERVED && System.currentTimeMillis() > this.expiryTimeMillis) {
+            // Automatically release if time has expired
+            this.status = SpotStatus.AVAILABLE;
+        }
         return this.status == SpotStatus.AVAILABLE;
     }
 
-    public void book() {
+    public void book(int hours) {
         this.status = SpotStatus.RESERVED;
+        // Convert hours to milliseconds and set expiry time
+        this.expiryTimeMillis = System.currentTimeMillis() + (hours * 60 * 60 * 1000L);
     }
 
     public void release() {

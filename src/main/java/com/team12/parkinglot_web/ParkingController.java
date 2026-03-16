@@ -99,10 +99,11 @@ public class ParkingController {
         for (ParkingFloor floor : lot.getFloors()) {
             for (ParkingSpot spot : floor.getSpots()) {
                 if (spot.getId().equals(spotId) && spot.isFree()) {
-                    spot.book(); // Status goes to RESERVED. Prevents double booking.
+                    spot.book(1); // Default to 1 hour reservation for now
                     floor.updateDisplay(); 
                     String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-                    DatabaseHelper.saveTicket(ticketId, spotId, "RESERVED");
+                    String userEmail = (String) session.getAttribute("userEmail");
+                    DatabaseHelper.saveTicket(ticketId, userEmail, spotId, "RESERVED");
                 }
             }
         }
@@ -130,7 +131,9 @@ public class ParkingController {
 
     // 2. Process Upfront Payment for All Spots
     @PostMapping("/pay")
-    public String finalizePayment(@RequestParam("selectedSpots") String selectedSpots, HttpSession session) {
+    public String finalizePayment(@RequestParam("selectedSpots") String selectedSpots, 
+                                  @RequestParam("hours") int hours, 
+                                  HttpSession session) {
         if (session.getAttribute("userEmail") == null) return "redirect:/login";
         
         ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
@@ -143,16 +146,27 @@ public class ParkingController {
                 for (ParkingSpot spot : floor.getSpots()) {
                     if (spot.getId().equals(spotId) && spot.isFree()) {
                         
-                        spot.book(); // Marks the spot as yellow/unavailable on the map
+                        spot.book(hours); // Marks the spot as yellow/unavailable on the map and sets expiry
                         floor.updateDisplay();
                         
                         // Generate a ticket and save it instantly as PAID
                         String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-                        DatabaseHelper.saveTicket(ticketId, spotId, "PAID");
+                        String userEmail = (String) session.getAttribute("userEmail");
+                        DatabaseHelper.saveTicket(ticketId, userEmail, spotId, "PAID");
                     }
                 }
             }
         }
         return "redirect:/dashboard/driver?payment=success";
+    }
+
+    @GetMapping("/bookings")
+    public String viewBookings(HttpSession session, Model model) {
+        String userEmail = (String) session.getAttribute("userEmail");
+        if (userEmail == null) return "redirect:/login";
+        
+        java.util.List<java.util.Map<String, String>> tickets = DatabaseHelper.getTicketsForUser(userEmail);
+        model.addAttribute("tickets", tickets);
+        return "bookings";
     }
 }
