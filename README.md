@@ -1,4 +1,4 @@
-# Park Manager (formerly PARK.SYS)
+# Park Manager
 
 A full-stack Spring Boot web application for managing a modern, multi-level parking facility. This system features a stunning, state-of-the-art dark glassmorphism UI. It allows drivers to register, log in, view available parking spots across different floors in real-time, book spots with dynamic time-based expiry, process payments, and track their active parking tickets.
 
