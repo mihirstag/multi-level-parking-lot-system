@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure Checkout</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 50px; text-align: center; }
+        .checkout-card { background: white; padding: 40px; border-radius: 12px; max-width: 400px; margin: auto; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); }
+        .price { font-size: 36px; color: #2ecc71; font-weight: bold; margin: 20px 0; }
+        .spot-details { font-size: 18px; color: #34495e; margin-bottom: 30px; }
+        .pay-btn { background-color: #3498db; color: white; border: none; padding: 15px 30px; font-size: 16px; border-radius: 6px; cursor: pointer; width: 100%; transition: background 0.3s; }
+        .pay-btn:hover { background-color: #2980b9; }
+        .cancel-link { display: inline-block; margin-top: 15px; color: #e74c3c; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="checkout-card">
+        <h2>Booking Summary</h2>
+        <div class="spot-details">
+            Reserved Spot: <strong th:text="${spotId}"></strong>
+        </div>
+        
+        <div class="price">
+            ₹<span th:text="${fee}"></span>
+        </div>
+        
+        <form th:action="@{/pay}" method="post">
+            <input type="hidden" name="spotId" th:value="${spotId}" />
+            <button type="submit" class="pay-btn">Complete Payment (Gateway)</button>
+        </form>
+        
+        <a href="/spots" class="cancel-link">Cancel Booking</a>
+    </div>
+
+</body>
+</html>

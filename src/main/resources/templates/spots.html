@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Parking Map</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; }
+        .floor-container { background: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0px 4px 15px rgba(0,0,0,0.05); }
+        .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 12px; margin-top: 15px; }
+        
+        .spot-btn { 
+            border: none; padding: 15px 5px; text-align: center; border-radius: 6px; 
+            font-weight: bold; font-size: 11px; color: white; cursor: pointer; transition: transform 0.2s;
+        }
+        .spot-btn:hover { transform: scale(1.05); }
+        
+        .AVAILABLE { background-color: #2ecc71; } 
+        .RESERVED { background-color: #f1c40f; color: #2c3e50; cursor: not-allowed; }
+        .OCCUPIED { background-color: #e74c3c; cursor: not-allowed; }
+        
+        .nav-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #34495e; color: white; text-decoration: none; border-radius: 5px; }
+        h1 { color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+    <a href="/" class="nav-btn">← Back to Dashboard</a>
+    <h1>Live Parking Map</h1>
+
+    <div th:each="floor : ${floors}" class="floor-container">
+        <h2 th:text="'Floor ' + ${floor.floorNumber}">Floor X</h2>
+        
+        <div class="grid">
+            <div th:each="spot : ${floor.spots}">
+                <form th:action="@{/book}" method="post">
+                    <input type="hidden" name="spotId" th:value="${spot.id}" />
+                    <button type="submit" 
+                            th:class="'spot-btn ' + ${spot.status}" 
+                            th:disabled="${spot.status.name() != 'AVAILABLE'}"
+                            th:text="${spot.id}">
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
