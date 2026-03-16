@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - PARK.SYS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        body { background-color: #1e1d2b; display: flex; flex-direction: column; height: 100vh; color: #fff; overflow: hidden; }
+        
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; background-color: #2a2935; border-bottom: 1px solid #383747; height: 70px; }
+        .logo { font-size: 22px; font-weight: bold; letter-spacing: 2px; color: #fff; text-decoration: none;}
+        .btn-outline { padding: 8px 20px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; border: 1px solid #4a4959; color: #fff; transition: 0.3s; }
+        .btn-outline:hover { border-color: #7b61ff; background: rgba(123, 97, 255, 0.1); }
+
+        .main-container { display: flex; height: calc(100vh - 70px); width: 100vw; }
+        
+        .slider-section { flex: 1; position: relative; overflow: hidden; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease-in-out; background-size: cover; background-position: center; }
+        .slide.active { opacity: 1; }
+        
+        .overlay { position: absolute; bottom: 0; width: 100%; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); display: flex; flex-direction: column; justify-content: flex-end; padding: 50px; z-index: 10; }
+        .overlay h2 { font-size: 36px; font-weight: bold; margin-bottom: 15px; }
+        .overlay p { font-size: 16px; color: #ddd; margin-bottom: 25px; }
+        .indicators { display: flex; gap: 8px; }
+        .dot { width: 30px; height: 4px; background-color: rgba(255,255,255,0.3); border-radius: 2px; }
+        .dot.active { background-color: #7b61ff; }
+
+        .form-section { flex: 1; display: flex; justify-content: center; align-items: center; background-color: #2a2935; }
+        
+        .form-card { background-color: #383747; width: 100%; max-width: 480px; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .form-card h1 { font-size: 28px; font-weight: 600; margin-bottom: 5px; color: #fff; }
+        .form-card > p { font-size: 14px; color: #a0a0b0; margin-bottom: 25px; }
+        
+        /* Alert Banners */
+        .alert { padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; text-align: center; }
+        .alert-error { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); }
+        .alert-success { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 13px; color: #ddd; margin-bottom: 8px; }
+        input { width: 100%; background-color: #2a2935; border: 1px solid #4a4959; color: white; padding: 14px; border-radius: 8px; font-size: 14px; outline: none; transition: 0.3s;}
+        input:focus { border-color: #7b61ff; }
+        
+        .btn-primary { width: 100%; background-color: #7b61ff; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-primary:hover { background-color: #694ce6; }
+        
+        .divider { display: flex; align-items: center; text-align: center; color: #888; font-size: 12px; margin: 25px 0; }
+        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #4a4959; }
+        .divider:not(:empty)::before { margin-right: 15px; }
+        .divider:not(:empty)::after { margin-left: 15px; }
+
+        .social-btns { display: flex; gap: 15px; margin-bottom: 20px; }
+        .btn-social { flex: 1; background: #2a2935; border: 1px solid #4a4959; color: white; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.3s;}
+        .btn-social:hover { background: #4a4959; }
+        
+        .footer-text { text-align: center; font-size: 13px; color: #a0a0b0; }
+        .footer-text a { color: #7b61ff; text-decoration: none; font-weight: 500; }
+        .footer-text a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="logo">PARK.SYS</a>
+        <a href="/register" class="btn-outline">Sign Up</a>
+    </nav>
+
+    <div class="main-container">
+        <div class="slider-section">
+            <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1506521781263-d8422e82f27a?q=80&w=1000&auto=format&fit=crop');"></div>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1000&auto=format&fit=crop');"></div>
+            
+            <div class="overlay">
+                <h2>Track Your Vehicle</h2>
+                <p>Monitor all your digital parking assets in one place.</p>
+                <div class="indicators">
+                    <div class="dot active"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-card">
+                <h1>Welcome Back</h1>
+                <p>Sign in to continue to your account</p>
+
+                <div th:if="${param.error}" class="alert alert-error">
+                    Invalid email or password. Please try again.
+                </div>
+                <div th:if="${param.registered}" class="alert alert-success">
+                    Account created successfully! Please sign in.
+                </div>
+                
+                <form action="/process-login" method="post">
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" name="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </form>
+
+                <div class="divider">Or continue with</div>
+
+                <div class="social-btns">
+                    <button class="btn-social">Google</button>
+                    <button class="btn-social">Apple</button>
+                </div>
+                
+                <div class="footer-text">
+                    Don't have an account? <a href="/register">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }, 3000); 
+    </script>
+</body>
+</html>

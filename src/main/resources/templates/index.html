@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>PARK.SYS - Next-Gen Parking</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        body { background-color: #1e1d2b; color: #fff; overflow-x: hidden; }
+        
+        /* Navbar */
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background-color: #2a2935; border-bottom: 1px solid #383747; }
+        .logo { font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #fff; }
+        .nav-links { display: flex; gap: 30px; font-size: 15px; color: #a0a0b0; }
+        .nav-links a { color: inherit; text-decoration: none; transition: color 0.3s; }
+        .nav-links a:hover { color: #fff; }
+        .nav-actions { display: flex; gap: 15px; }
+        
+        .btn { padding: 10px 20px; border-radius: 6px; font-size: 15px; font-weight: 500; cursor: pointer; text-decoration: none; transition: 0.3s; }
+        .btn-outline { background: transparent; border: 1px solid #4a4959; color: #fff; }
+        .btn-outline:hover { border-color: #7b61ff; background: rgba(123, 97, 255, 0.1); }
+        .btn-primary { background-color: #7b61ff; border: 1px solid #7b61ff; color: #fff; }
+        .btn-primary:hover { background-color: #694ce6; }
+
+        /* Hero Section */
+        .hero { display: flex; align-items: center; padding: 80px 5%; gap: 50px; min-height: calc(100vh - 80px); }
+        .hero-content { flex: 1; }
+        .badge { display: inline-block; padding: 8px 15px; background: rgba(123, 97, 255, 0.1); color: #7b61ff; border-radius: 20px; font-size: 14px; margin-bottom: 25px; font-weight: 500; }
+        .hero h1 { font-size: 56px; line-height: 1.1; margin-bottom: 25px; font-weight: 700; }
+        .hero h1 span { color: #7b61ff; }
+        .hero p { font-size: 18px; color: #a0a0b0; line-height: 1.6; margin-bottom: 40px; max-width: 500px; }
+        
+        /* Stats */
+        .stats-container { display: flex; gap: 30px; margin-top: 50px; border-top: 1px solid #383747; padding-top: 30px; }
+        .stat-box { flex: 1; }
+        .stat-label { font-size: 12px; color: #a0a0b0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: bold; color: #fff; }
+        .stat-sub { font-size: 13px; color: #2ecc71; margin-top: 5px; }
+
+        .hero-image { flex: 1; display: flex; justify-content: flex-end; }
+        .hero-image img { max-width: 100%; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 1px solid #383747; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">PARK.SYS</div>
+        <div class="nav-links">
+            <a href="#">Features</a>
+            <a href="#">How It Works</a>
+            <a href="#">Locations</a>
+            <a href="#">FAQ</a>
+        </div>
+        <div class="nav-actions">
+            <a href="/login" class="btn btn-outline">Sign In</a>
+            <a href="/register" class="btn btn-primary">Get Started</a>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <div class="badge">🚀 Smart Parking System</div>
+            <h1>The City's Premier <br><span>Parking Hub</span> Tracker</h1>
+            <p>Monitor parking availability with real-time data, seamless booking, and secure digital checkout. Start your journey to smarter parking today.</p>
+            
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-label">Total Capacity</div>
+                    <div class="stat-value">150+</div>
+                    <div class="stat-sub">↑ Live Spots</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Daily Volume</div>
+                    <div class="stat-value">3,500+</div>
+                    <div class="stat-sub">↑ Active Cars</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Supported</div>
+                    <div class="stat-value">4 Types</div>
+                    <div class="stat-sub">EV, Large, etc.</div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?q=80&w=800&auto=format&fit=crop" alt="Parking App Dashboard Mockup">
+        </div>
+    </div>
+
+</body>
+</html>

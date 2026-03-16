@@ -5,17 +5,21 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import jakarta.servlet.http.HttpSession;
 
 import parkinglot.core.ParkingFloor;
 import parkinglot.core.ParkingLot;
 import parkinglot.enums.SpotType;
 import parkinglot.spots.SpotFactory;
 import parkinglot.spots.ParkingSpot;
+import parkinglot.db.DatabaseHelper;
+import java.util.UUID;
 
 @Controller
 public class ParkingController {
 
     public ParkingController() {
+        DatabaseHelper.initializeDatabase();
         ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
         if (lot.getFloors().isEmpty()) {
             for (int i = 1; i <= 3; i++) {
@@ -30,62 +34,125 @@ public class ParkingController {
     }
 
     @GetMapping("/")
-    public String viewDashboard(Model model) {
-        model.addAttribute("systemName", "Multi-Level Parking Lot System");
-        model.addAttribute("welcomeMessage", "Welcome, Driver! Please book your spot.");
+    public String showHome() { return "index"; }
+
+    @GetMapping("/login")
+    public String showLogin() { return "login"; }
+
+    @GetMapping("/register")
+    public String showRegister() { return "register"; }
+
+    // --- NEW: Process Registration ---
+    @PostMapping("/process-register")
+    public String processRegister(@RequestParam("firstName") String firstName, 
+                                  @RequestParam("lastName") String lastName, 
+                                  @RequestParam("email") String email, 
+                                  @RequestParam("password") String password) {
+        boolean success = DatabaseHelper.registerDriver(firstName + " " + lastName, email, password);
+        if(success) return "redirect:/login?registered=true";
+        return "redirect:/register?error=true";
+    }
+
+    // --- NEW: Process Login & Create Session ---
+    @PostMapping("/process-login")
+    public String processLogin(@RequestParam("email") String email, 
+                               @RequestParam("password") String password, 
+                               HttpSession session) {
+        if (DatabaseHelper.loginDriver(email, password)) {
+            session.setAttribute("userEmail", email); // User is logged in!
+            return "redirect:/dashboard/driver";
+        }
+        return "redirect:/login?error=true";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate(); // Destroy session
+        return "redirect:/login";
+    }
+
+    // --- DASHBOARD ---
+    @GetMapping("/dashboard/driver")
+    public String viewDriverDashboard(HttpSession session, Model model) {
+        if (session.getAttribute("userEmail") == null) return "redirect:/login"; // Security block!
+        
+        model.addAttribute("systemName", "Driver Portal");
+        model.addAttribute("welcomeMessage", "Welcome, " + session.getAttribute("userEmail") + "!");
         return "dashboard"; 
     }
 
     @GetMapping("/spots")
-    public String viewSpots(Model model) {
+    public String viewSpots(HttpSession session, Model model) {
+        if (session.getAttribute("userEmail") == null) return "redirect:/login"; // Security block!
+        
         ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
         model.addAttribute("floors", lot.getFloors());
         return "spots";
     }
 
-    // NEW METHOD: Handles the booking request
-    // Notice the ("spotId") added inside the parenthesis here!
-    // UPDATED METHOD: Redirects to checkout instead of just refreshing
+    // --- FIXED: Book Spot (No double booking!) ---
     @PostMapping("/book")
-    public String bookSpot(@RequestParam("spotId") String spotId) {
-        ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
+    public String bookSpot(@RequestParam("spotId") String spotId, HttpSession session) {
+        if (session.getAttribute("userEmail") == null) return "redirect:/login";
         
+        ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
         for (ParkingFloor floor : lot.getFloors()) {
             for (ParkingSpot spot : floor.getSpots()) {
                 if (spot.getId().equals(spotId) && spot.isFree()) {
-                    spot.book(); // Updates status to RESERVED
+                    spot.book(); // Status goes to RESERVED. Prevents double booking.
                     floor.updateDisplay(); 
-                    // Redirect to checkout with the spot ID
-                    return "redirect:/checkout?spotId=" + spotId; 
+                    String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+                    DatabaseHelper.saveTicket(ticketId, spotId, "RESERVED");
                 }
             }
         }
-        return "redirect:/spots"; 
+        return "redirect:/spots"; // Stay on map!
     }
 
-    // NEW METHOD: Shows the checkout page
-    @GetMapping("/checkout")
-    public String viewCheckout(@RequestParam("spotId") String spotId, Model model) {
-        model.addAttribute("spotId", spotId);
-        model.addAttribute("fee", 50.0); // Using a static ₹50 fee for now
+    // 1. New Multi-Spot Checkout (POST instead of GET)
+    @PostMapping("/checkout")
+    public String processCart(@RequestParam("selectedSpots") String selectedSpots, 
+                              @RequestParam("hours") int hours, 
+                              Model model) {
+        // Split the comma-separated string into an array (e.g., ["F1-C1", "F1-C2"])
+        String[] spotsArray = selectedSpots.split(",");
+        
+        // Calculate the fee: (Number of spots) * (Hours) * (₹50 per hour)
+        double totalFee = spotsArray.length * hours * 50.0; 
+        
+        model.addAttribute("selectedSpots", selectedSpots);
+        model.addAttribute("hours", hours);
+        model.addAttribute("fee", totalFee);
+        model.addAttribute("spotCount", spotsArray.length);
+        
         return "checkout";
     }
 
-    // NEW METHOD: Processes payment and Auto-Releases the spot
+    // 2. Process Upfront Payment for All Spots
     @PostMapping("/pay")
-    public String processPayment(@RequestParam("spotId") String spotId) {
-        ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
+    public String finalizePayment(@RequestParam("selectedSpots") String selectedSpots, HttpSession session) {
+        if (session.getAttribute("userEmail") == null) return "redirect:/login";
         
-        // Find the spot and release it (simulating successful payment)
-        for (ParkingFloor floor : lot.getFloors()) {
-            for (ParkingSpot spot : floor.getSpots()) {
-                if (spot.getId().equals(spotId)) {
-                    spot.release(); // Triggers Auto-Release System Logic
-                    floor.updateDisplay();
+        ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
+        String[] spotsArray = selectedSpots.split(",");
+        
+        // Loop through every spot the user selected
+        for (String spotId : spotsArray) {
+            spotId = spotId.trim();
+            for (ParkingFloor floor : lot.getFloors()) {
+                for (ParkingSpot spot : floor.getSpots()) {
+                    if (spot.getId().equals(spotId) && spot.isFree()) {
+                        
+                        spot.book(); // Marks the spot as yellow/unavailable on the map
+                        floor.updateDisplay();
+                        
+                        // Generate a ticket and save it instantly as PAID
+                        String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+                        DatabaseHelper.saveTicket(ticketId, spotId, "PAID");
+                    }
                 }
             }
         }
-        // Send them back to the dashboard with a success flag
-        return "redirect:/?payment=success";
+        return "redirect:/dashboard/driver?payment=success";
     }
 }

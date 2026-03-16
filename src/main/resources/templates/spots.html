@@ -4,45 +4,126 @@
     <meta charset="UTF-8">
     <title>Live Parking Map</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; padding-bottom: 100px; }
         .floor-container { background: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0px 4px 15px rgba(0,0,0,0.05); }
         .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 12px; margin-top: 15px; }
         
+        /* Spot Buttons */
         .spot-btn { 
-            border: none; padding: 15px 5px; text-align: center; border-radius: 6px; 
-            font-weight: bold; font-size: 11px; color: white; cursor: pointer; transition: transform 0.2s;
+            border: 2px solid transparent; padding: 15px 5px; text-align: center; border-radius: 6px; 
+            font-weight: bold; font-size: 11px; color: white; cursor: pointer; transition: 0.2s; width: 100%;
         }
-        .spot-btn:hover { transform: scale(1.05); }
+        .spot-btn:hover:not(:disabled) { transform: scale(1.05); }
         
+        /* Status Colors */
         .AVAILABLE { background-color: #2ecc71; } 
-        .RESERVED { background-color: #f1c40f; color: #2c3e50; cursor: not-allowed; }
-        .OCCUPIED { background-color: #e74c3c; cursor: not-allowed; }
+        .RESERVED { background-color: #f1c40f; color: #2c3e50; cursor: not-allowed; opacity: 0.7;} 
+        
+        /* New Selected State */
+        .SELECTED { border: 3px solid #2c3e50; transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         
         .nav-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #34495e; color: white; text-decoration: none; border-radius: 5px; }
-        h1 { color: #2c3e50; }
+        h1 { color: #2c3e50; margin-bottom: 5px;}
+        
+        /* Sticky Bottom Checkout Bar (Hidden by default) */
+        .checkout-cart {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #2c3e50; color: white;
+            padding: 20px 50px; display: none; justify-content: space-between; align-items: center;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.2); z-index: 1000;
+        }
+        .cart-info { font-size: 18px; font-weight: bold; }
+        .cart-controls { display: flex; gap: 20px; align-items: center; }
+        .cart-controls label { font-size: 14px; }
+        .cart-controls input { padding: 8px; border-radius: 5px; border: none; width: 80px; text-align: center; font-weight: bold;}
+        .btn-checkout { background: #e67e22; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px;}
+        .btn-checkout:hover { background: #d35400; }
     </style>
 </head>
 <body>
 
-    <a href="/" class="nav-btn">← Back to Dashboard</a>
+    <a href="/dashboard/driver" class="nav-btn">← Back to Dashboard</a>
+    
     <h1>Live Parking Map</h1>
+    <p style="color: #666; margin-bottom: 25px;">Select one or more available spots to reserve your time block.</p>
 
     <div th:each="floor : ${floors}" class="floor-container">
         <h2 th:text="'Floor ' + ${floor.floorNumber}">Floor X</h2>
         
         <div class="grid">
             <div th:each="spot : ${floor.spots}">
-                <form th:action="@{/book}" method="post">
-                    <input type="hidden" name="spotId" th:value="${spot.id}" />
-                    <button type="submit" 
-                            th:class="'spot-btn ' + ${spot.status}" 
-                            th:disabled="${spot.status.name() != 'AVAILABLE'}"
-                            th:text="${spot.id}">
-                    </button>
-                </form>
+                
+                <button type="button" 
+                        th:if="${spot.status.name() == 'AVAILABLE'}" 
+                        class="spot-btn AVAILABLE" 
+                        th:text="${spot.id}"
+                        th:attr="onclick=|toggleSpot('${spot.id}', this)|">
+                </button>
+
+                <button type="button" 
+                        th:if="${spot.status.name() == 'RESERVED'}" 
+                        class="spot-btn RESERVED" disabled 
+                        th:text="${spot.id} + ' (Booked)'">
+                </button>
+
             </div>
         </div>
     </div>
 
+    <div class="checkout-cart" id="checkout-cart">
+        <div class="cart-info">
+            Spots Selected: <span id="spot-count">0</span>
+            <div style="font-size: 12px; color: #bdc3c7; font-weight: normal; margin-top: 5px;" id="spot-list"></div>
+        </div>
+        
+        <form action="/checkout" method="post" class="cart-controls">
+            <input type="hidden" name="selectedSpots" id="selected-spots-input" required>
+            
+            <div>
+                <label for="hours">Duration (Hours): </label>
+                <input type="number" name="hours" id="hours" min="1" max="24" value="1" required>
+            </div>
+            
+            <button type="submit" class="btn-checkout">Proceed to Checkout</button>
+        </form>
+    </div>
+
+    <script>
+        let selectedSpots = [];
+
+        function toggleSpot(spotId, btnElement) {
+            const index = selectedSpots.indexOf(spotId);
+            
+            // If already selected, remove it
+            if (index > -1) {
+                selectedSpots.splice(index, 1);
+                btnElement.classList.remove('SELECTED');
+            } 
+            // If not selected, add it
+            else {
+                selectedSpots.push(spotId);
+                btnElement.classList.add('SELECTED');
+            }
+            
+            updateCart();
+        }
+
+        function updateCart() {
+            const cart = document.getElementById('checkout-cart');
+            const countSpan = document.getElementById('spot-count');
+            const listDiv = document.getElementById('spot-list');
+            const hiddenInput = document.getElementById('selected-spots-input');
+
+            if (selectedSpots.length > 0) {
+                cart.style.display = 'flex'; // Show the bar
+                countSpan.innerText = selectedSpots.length;
+                listDiv.innerText = selectedSpots.join(', ');
+                
+                // Joins array into a comma-separated string for Spring Boot to read
+                hiddenInput.value = selectedSpots.join(','); 
+            } else {
+                cart.style.display = 'none'; // Hide the bar if empty
+            }
+        }
+    </script>
 </body>
 </html>

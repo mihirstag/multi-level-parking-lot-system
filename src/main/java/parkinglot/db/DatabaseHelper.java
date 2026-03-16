@@ -2,42 +2,100 @@ package parkinglot.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.UUID;
 
 public class DatabaseHelper {
-    // The database file will be created in your root project folder
     private static final String DB_URL = "jdbc:sqlite:parkinglot.db";
 
     public static Connection connect() {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(DB_URL);
-            System.out.println("Connection to SQLite has been established.");
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("DB Connection Error: " + e.getMessage());
         }
         return conn;
     }
 
     public static void initializeDatabase() {
-        // Creates the table for Drivers if it doesn't already exist
         String createDriverTable = "CREATE TABLE IF NOT EXISTS drivers (\n"
                 + " id text PRIMARY KEY,\n"
                 + " name text NOT NULL,\n"
-                + " email text NOT NULL,\n"
-                + " phone text NOT NULL,\n"
+                + " email text NOT NULL UNIQUE,\n"
+                + " phone text,\n"
                 + " password text NOT NULL,\n"
-                + " license_plate text NOT NULL,\n"
-                + " dl_number text NOT NULL,\n"
-                + " aadhar_number text NOT NULL\n"
+                + " license_plate text,\n"
+                + " dl_number text,\n"
+                + " aadhar_number text\n"
                 + ");";
 
-        try (Connection conn = connect();
-             Statement stmt = conn.createStatement()) {
+        String createTicketTable = "CREATE TABLE IF NOT EXISTS tickets (\n"
+                + " ticket_id text PRIMARY KEY,\n"
+                + " spot_id text NOT NULL,\n"
+                + " status text NOT NULL,\n" 
+                + " timestamp DATETIME DEFAULT CURRENT_TIMESTAMP\n"
+                + ");";
+
+        try (Connection conn = connect(); Statement stmt = conn.createStatement()) {
             stmt.execute(createDriverTable);
+            stmt.execute(createTicketTable);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Table Creation Error: " + e.getMessage());
         }
+    }
+
+    // --- NEW: Register a new User ---
+    public static boolean registerDriver(String name, String email, String password) {
+        String id = "D-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        // Filling missing info with placeholders for now since UI only asks for Name, Email, Password
+        String sql = "INSERT INTO drivers(id, name, email, phone, password, license_plate, dl_number, aadhar_number) VALUES(?,?,?,'N/A',?,'N/A','N/A','N/A')";
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, id);
+            pstmt.setString(2, name);
+            pstmt.setString(3, email);
+            pstmt.setString(4, password);
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Register Error (Email might exist): " + e.getMessage());
+            return false;
+        }
+    }
+
+    // --- NEW: Verify User Login ---
+    public static boolean loginDriver(String email, String password) {
+        String sql = "SELECT id FROM drivers WHERE email = ? AND password = ?";
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, email);
+            pstmt.setString(2, password);
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next(); // Returns true if a match is found
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    // --- Ticket Methods (From previous steps) ---
+    public static void saveTicket(String ticketId, String spotId, String status) {
+        String sql = "INSERT INTO tickets(ticket_id, spot_id, status) VALUES(?,?,?)";
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, ticketId);
+            pstmt.setString(2, spotId);
+            pstmt.setString(3, status);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {}
+    }
+
+    public static void updateTicketStatus(String spotId, String status) {
+        String sql = "UPDATE tickets SET status = ? WHERE spot_id = ? AND status = 'RESERVED'";
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, status);
+            pstmt.setString(2, spotId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {}
     }
 }

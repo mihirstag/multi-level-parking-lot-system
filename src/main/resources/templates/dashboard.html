@@ -2,26 +2,28 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Parking Lot System</title>
+    <title>Driver Portal - PARK.SYS</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; text-align: center; }
-        .btn { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        .btn:hover { background-color: #0056b3; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background-color: #1e1d2b; color: white; padding: 40px; text-align: center; }
+        .container { background: #2a2935; padding: 50px; border-radius: 16px; max-width: 500px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid #383747;}
+        .btn { display: inline-block; padding: 15px 30px; background-color: #7b61ff; color: white; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: bold; margin-top: 20px;}
+        .btn:hover { background-color: #694ce6; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1 th:text="${systemName}">Placeholder Title</h1>
-        <p th:text="${welcomeMessage}">Placeholder Message</p>
+        <h1 th:text="${systemName}">Driver Portal</h1>
+        <p style="color: #a0a0b0; margin-top: 10px;" th:text="${welcomeMessage}"></p>
         
-        <div th:if="${param.payment != null}" style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #c3e6cb;">
-            Payment Successful! Your spot has been released.
+        <div th:if="${param.payment != null}" style="background-color: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); padding: 15px; border-radius: 8px; margin-top: 25px;">
+            Payment Successful! Your spots are secured.
         </div>
         
-        <br>
-        <button class="btn" onclick="window.location.href='/spots'">View Available Spots</button>
+        <a href="/spots" class="btn">View Live Map & Reserve Time</a>
+        
+        <br><br><br>
+        <a href="/logout" style="color: #ff4757; text-decoration: none; font-size: 14px;">Logout</a>
     </div>
 
 </body>
