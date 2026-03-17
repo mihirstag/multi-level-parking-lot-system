@@ -5,7 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 
 import parkinglot.core.ParkingFloor;
 import parkinglot.core.ParkingLot;
@@ -129,10 +129,28 @@ public class ParkingController {
         return "checkout";
     }
 
-    // 2. Process Upfront Payment for All Spots
+    // 2. Show payment form (Credit Card / PayPal / Net Banking)
+    @PostMapping("/payment")
+    public String showPaymentForm(@RequestParam("selectedSpots") String selectedSpots,
+                                  @RequestParam("hours") int hours,
+                                  Model model) {
+        String[] spotsArray = selectedSpots.split(",");
+        double totalFee = spotsArray.length * hours * 50.0;
+
+        model.addAttribute("selectedSpots", selectedSpots);
+        model.addAttribute("hours", hours);
+        model.addAttribute("fee", totalFee);
+        model.addAttribute("spotCount", spotsArray.length);
+        
+        return "payment";
+    }
+
+    // 3. Process Upfront Payment for All Spots
     @PostMapping("/pay")
     public String finalizePayment(@RequestParam("selectedSpots") String selectedSpots, 
                                   @RequestParam("hours") int hours, 
+                                  @RequestParam("paymentMethod") String paymentMethod,
+                                  @RequestParam(value = "bankCode", required = false) String bankCode,
                                   HttpSession session) {
         if (session.getAttribute("userEmail") == null) return "redirect:/login";
         
@@ -152,12 +170,18 @@ public class ParkingController {
                         // Generate a ticket and save it instantly as PAID
                         String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
                         String userEmail = (String) session.getAttribute("userEmail");
-                        DatabaseHelper.saveTicket(ticketId, userEmail, spotId, "PAID");
+                        DatabaseHelper.saveTicket(ticketId, userEmail, spotId, "PAID", paymentMethod, bankCode);
                     }
                 }
             }
         }
-        return "redirect:/dashboard/driver?payment=success";
+        return "redirect:/success";
+    }
+
+    @GetMapping("/success")
+    public String showSuccess(HttpSession session) {
+        if (session.getAttribute("userEmail") == null) return "redirect:/login";
+        return "success";
     }
 
     @GetMapping("/bookings")

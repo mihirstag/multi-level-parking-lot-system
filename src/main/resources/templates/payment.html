@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap Payment Forms</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- Custom Tweaks to match your screenshots -->
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(30, 31, 38, 0.6);
+            --primary-accent: #66fcf1;
+            --secondary-accent: #45a29e;
+            --text-main: #ffffff;
+            --text-muted: #c5c6c7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body { 
+            background-color: var(--bg-color); color: var(--text-main); 
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% 10%, rgba(69, 162, 158, 0.15), transparent 60%);
+        }
+
+        .navbar { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 20px 6%; 
+            background: rgba(11, 12, 16, 0.6);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none;}
+        .logo span { color: var(--primary-accent); }
+        .nav-links { display: flex; gap: 40px; font-size: 15px; font-weight: 500;}
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-accent); }
+        .nav-actions { display: flex; gap: 15px; align-items: center;}
+
+        .payment-bg { background-color: var(--bg-color); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 60px 0; }
+
+        .payment-card { 
+            background: var(--surface-color); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            padding: 50px; border-radius: 24px; max-width: 780px; width: 100%; text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        h1 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+        .text-muted { color: var(--text-muted); }
+
+        .payment-summary { margin-bottom: 30px; }
+        .payment-summary .fee { font-size: 56px; color: var(--primary-accent); font-weight: 800; line-height: 1; letter-spacing: -2px; }
+        .payment-summary .meta { font-size: 14px; color: var(--text-muted); margin-top: 10px; font-weight: 500; }
+
+        .nav-pills-container {
+            background-color: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        .nav-pills .nav-link {
+            color: var(--text-muted);
+            font-weight: 600;
+            border-radius: 12px;
+            padding: 12px 0;
+            transition: all 0.2s ease;
+        }
+        .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+            color: var(--text-main);
+            background-color: rgba(102, 252, 241, 0.2);
+        }
+
+        .form-control, .form-select {
+            border-color: rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.08);
+            color: var(--text-main);
+        }
+        .form-select {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-main);
+        }
+        .form-select option {
+            background: rgba(11, 12, 16, 0.95);
+            color: var(--text-main);
+        }
+        .form-control::placeholder { color: rgba(255,255,255,0.65); }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(102, 252, 241, 0.2);
+            border-color: rgba(102, 252, 241, 0.5);
+            background: rgba(255,255,255,0.12);
+            color: var(--text-main);
+        }
+
+        .pay-btn { 
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent)); 
+            color: var(--bg-color); border: none; padding: 18px; font-size: 16px; font-weight: 700; 
+            border-radius: 12px; cursor: pointer; width: 100%; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(102, 252, 241, 0.2);
+            text-decoration: none;
+            display: inline-block;
+        }
+        .pay-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(102, 252, 241, 0.3); }
+
+        .form-check-label { color: var(--text-main); }
+        .form-check-input:checked { background-color: var(--primary-accent); border-color: var(--primary-accent); }
+
+        .summary-card {
+            background: rgba(30, 31, 38, 0.7);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 18px;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+        }
+        .summary-card h5 { color: var(--text-main); }
+        .summary-card .text-muted { color: rgba(255, 255, 255, 0.65); }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="logo">Park<span> Manager</span></a>
+        <div class="nav-links">
+            <a href="/dashboard/driver">Dashboard</a>
+            <a href="/bookings">My Bookings</a>
+            <a href="/spots">Live Map</a>
+        </div>
+        <div class="nav-actions">
+            <span th:text="${session.userEmail}"></span>
+        </div>
+    </nav>
+
+    <section class="payment-bg">
+        <div class="payment-card">
+            <div class="payment-header text-center">
+                <h1>Secure Payment</h1>
+                <p class="text-muted">Complete your booking by choosing a payment method below.</p>
+            </div>
+
+            <div class="payment-summary text-center">
+                <div class="fee">₹<span th:text="${fee}"></span></div>
+                <div class="meta">Total Amount Due</div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-7">
+                    <!-- Tabs Navigation -->
+                    <div class="nav-pills-container mb-4">
+                        <ul class="nav nav-pills nav-fill" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active w-100" id="credit-card-tab" data-bs-toggle="pill" data-bs-target="#credit-card" type="button" role="tab" aria-selected="true">
+                                    <i class="fas fa-credit-card me-2"></i> Credit Card
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link w-100" id="net-banking-tab" data-bs-toggle="pill" data-bs-target="#net-banking" type="button" role="tab" aria-selected="false">
+                                    <i class="fas fa-mobile-alt me-2"></i> Net Banking
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Tabs Content -->
+                    <div class="tab-content" id="paymentTabsContent">
+                        <!-- Credit Card -->
+                        <div class="tab-pane fade show active" id="credit-card" role="tabpanel" aria-labelledby="credit-card-tab">
+                            <form th:action="@{/pay}" method="post">
+                                <input type="hidden" name="selectedSpots" th:value="${selectedSpots}" />
+                                <input type="hidden" name="hours" th:value="${hours}" />
+                                <input type="hidden" name="paymentMethod" value="CREDIT_CARD" />
+
+                                <div class="mb-3">
+                                    <label class="fw-bold mb-2">Card Owner</label>
+                                    <input name="cardOwner" type="text" placeholder="Card Owner Name" required class="form-control">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="fw-bold mb-2">Card number</label>
+                                    <div class="input-group">
+                                        <input name="cardNumber" type="text" placeholder="Valid card number" class="form-control" required>
+                                        <span class="input-group-text bg-light border-start-0 text-muted">
+                                            <i class="fab fa-cc-visa mx-1"></i>
+                                            <i class="fab fa-cc-mastercard mx-1"></i>
+                                            <i class="fab fa-cc-amex mx-1"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-sm-8">
+                                        <label class="fw-bold mb-2">Expiration Date</label>
+                                        <div class="input-group">
+                                            <input name="expiryMonth" type="number" placeholder="MM" class="form-control" required>
+                                            <input name="expiryYear" type="number" placeholder="YY" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4 mt-3 mt-sm-0">
+                                        <label class="fw-bold mb-2 d-flex align-items-center">
+                                            CVV 
+                                            <i class="fa fa-question-circle ms-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Three digit CV code on the back of your card"></i>
+                                        </label>
+                                        <input name="cvv" type="text" required class="form-control">
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="pay-btn">
+                                    Confirm Payment
+                                </button>
+                            </form>
+                        </div>
+
+
+
+                        <!-- Net Banking -->
+                        <div class="tab-pane fade" id="net-banking" role="tabpanel" aria-labelledby="net-banking-tab">
+                            <form th:action="@{/pay}" method="post">
+                                <input type="hidden" name="selectedSpots" th:value="${selectedSpots}" />
+                                <input type="hidden" name="hours" th:value="${hours}" />
+                                <input type="hidden" name="paymentMethod" value="NET_BANKING" />
+
+                                <div class="mb-4">
+                                    <label class="fw-bold mb-2">Select your Bank</label>
+                                    <select name="bank" class="form-select" required>
+                                        <option value="" selected disabled>--Please select your Bank--</option>
+                                        <option>HDFC Bank</option>
+                                        <option>ICICI Bank</option>
+                                        <option>Axis Bank</option>
+                                        <option>Kotak Mahindra Bank</option>
+                                        <option>IndusInd Bank</option>
+                                        <option>State Bank of India (SBI)</option>
+                                        <option>Bank of Baroda</option>
+                                        <option>Union Bank of India</option>
+                                        <option>Bank of India</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="fw-bold mb-2">Enter verification code</label>
+                                    <input name="bankCode" type="text" placeholder="e.g. 123456" class="form-control" required>
+                                    <small class="text-muted">Enter the OTP/code sent by your bank to complete the payment.</small>
+                                </div>
+                                
+                                <button type="submit" class="pay-btn">
+                                    Confirm Payment
+                                </button>
+
+                                <p class="text-muted">
+                                    Note: After clicking on the button, you will be directed to a secure gateway for payment. After completing the payment process, you will be redirected back to the website to view details of your order.
+                                </p>
+                            </form>
+                        </div>
+
+                    </div> <!-- End Tab Content -->
+                </div>
+
+                <div class="col-lg-5 mt-4 mt-lg-0">
+                    <div class="summary-card">
+                        <h5 class="mb-3">Reservation Summary</h5>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Spots Reserved</span>
+                                <span th:text="${spotCount}"></span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Duration</span>
+                                <span><span th:text="${hours}"></span> hr(s)</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Slot IDs</span>
+                                <span th:text="${selectedSpots}"></span>
+                            </div>
+                        </div>
+
+                        <a href="/spots" class="back-link">← Cancel and return to map</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap 5 JS Bundle (Includes Popper for Tooltips) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

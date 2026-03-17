@@ -110,6 +110,8 @@
                     <div class="b-ticket" th:text="${ticket.ticketId}">TKT-XXXXXX</div>
                     <div class="b-spot" th:text="'Spot ' + ${ticket.spotId}">Spot F1-C1</div>
                     <div class="b-time" th:text="${ticket.timestamp}">2026-03-XX</div>
+                    <div th:if="${ticket.paymentMethod != null}" class="b-payment" th:text="'Payment: ' + ${ticket.paymentMethod}">Payment: CREDIT_CARD</div>
+                    <div th:if="${ticket.bankCode != null}" class="b-code" th:text="'Code: ' + ${ticket.bankCode}">Code: 123456</div>
                 </div>
                 <div>
                     <span th:class="'b-status status-' + ${#strings.toLowerCase(ticket.status)}" th:text="${ticket.status}">PAID</span>

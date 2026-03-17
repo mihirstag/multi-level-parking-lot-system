@@ -2,12 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Secure Checkout - Park Manager</title>
+    <title>Payment Successful - Park Manager</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0b0c10;
-            --surface-color: rgba(30, 31, 38, 0.7);
+            --surface-color: rgba(30, 31, 38, 0.6);
             --primary-accent: #66fcf1;
             --secondary-accent: #45a29e;
             --text-main: #ffffff;
@@ -38,37 +38,73 @@
         
         .main-content { display: flex; align-items: center; justify-content: center; padding: 60px 20px; min-height: calc(100vh - 80px); }
 
-        .checkout-card { 
+        .success-card { 
             background: rgba(30, 31, 38, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            padding: 50px; border-radius: 24px; max-width: 450px; width: 100%; text-align: center;
+            padding: 50px; border-radius: 24px; max-width: 500px; width: 100%; text-align: center;
             box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);
         }
-        
-        h2 { font-size: 24px; font-weight: 800; margin-bottom: 30px; }
-        
-        .price-box {
-            padding: 30px 0; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 30px;
-        }
-        .price { font-size: 56px; color: var(--primary-accent); font-weight: 800; line-height: 1; letter-spacing: -2px;}
-        .price span { font-size: 24px; vertical-align: super; }
-        
-        .spot-details { 
-            font-size: 15px; color: var(--text-main); margin-bottom: 30px; line-height: 1.6; 
-            background: rgba(0,0,0,0.2); padding: 20px; border-radius: 16px; text-align: left;
-        }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .detail-row:last-child { margin-bottom: 0; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); color: var(--text-muted); font-size: 13px;}
-        
+
         .pay-btn { 
             background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent)); 
             color: var(--bg-color); border: none; padding: 18px; font-size: 16px; font-weight: 700; 
             border-radius: 12px; cursor: pointer; width: 100%; transition: 0.3s;
             box-shadow: 0 10px 20px rgba(102, 252, 241, 0.2);
+            text-decoration: none;
+            display: inline-block;
         }
         .pay-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(102, 252, 241, 0.3); }
         
-        .cancel-link { display: inline-block; margin-top: 25px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s;}
-        .cancel-link:hover { color: white; }
+        .success-icon { font-size: 80px; color: var(--primary-accent); margin-bottom: 20px; }
+        
+        h2 { font-size: 28px; font-weight: 800; margin-bottom: 20px; }
+        
+        .message { 
+            font-size: 16px; color: var(--text-main); margin-bottom: 30px; line-height: 1.6; 
+        }
+        
+        .btn-large {
+            width: 100%;
+            max-width: 320px;
+            display: inline-block;
+            text-align: center;
+            padding: 18px 30px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(102, 252, 241, 0.2);
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            color: var(--bg-color);
+            border: none;
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 252, 241, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(102, 252, 241, 0.35);
+            color: var(--text-main);
+            font-weight: 600;
+        }
+        .btn-secondary:hover {
+            background: rgba(102, 252, 241, 0.12);
+            box-shadow: 0 15px 30px rgba(102, 252, 241, 0.25);
+        }
     </style>
 </head>
 <body>
@@ -87,36 +123,18 @@
     </nav>
 
     <div class="main-content">
-        <div class="checkout-card">
-            <h2>Complete Reservation</h2>
-        
-        <div class="price-box">
-            <div class="price"><span>₹</span><span th:text="${fee}" style="font-size: inherit; vertical-align: baseline;"></span></div>
-            <div style="font-size: 14px; color: var(--text-muted); margin-top: 10px; font-weight: 500;">Total Amount Due</div>
-        </div>
-        
-        <div class="spot-details">
-            <div class="detail-row">
-                <span style="color: var(--text-muted);">Spots Reserved</span>
-                <strong th:text="${spotCount}"></strong>
+        <div class="success-card">
+            <div class="success-icon">✓</div>
+            <h2>Payment Successful!</h2>
+            <div class="message">
+                <p>Your parking reservation has been confirmed and paid for successfully.</p>
+                <p>You can now proceed to your designated parking spot. The gate will open automatically when you arrive.</p>
             </div>
-            <div class="detail-row">
-                <span style="color: var(--text-muted);">Duration</span>
-                <strong><span th:text="${hours}"></span> hr(s)</strong>
-            </div>
-            <div class="detail-row">
-                <span>Slot IDs</span>
-                <span th:text="${selectedSpots}"></span>
+            <div class="button-group">
+                <a href="/dashboard/driver" class="pay-btn">Go to Dashboard</a>
+                <a href="/bookings" class="pay-btn">View My Bookings</a>
             </div>
         </div>
-        
-        <form th:action="@{/payment}" method="post">
-            <input type="hidden" name="selectedSpots" th:value="${selectedSpots}" />
-            <input type="hidden" name="hours" th:value="${hours}" />
-            <button type="submit" class="pay-btn">Confirm & Pay Using Secure Gateway</button>
-        </form>
-        
-        <a href="/spots" class="cancel-link">Cancel and return to map</a>
     </div>
 
 </body>

@@ -38,6 +38,8 @@ public class DatabaseHelper {
                 + " user_email text NOT NULL,\n"
                 + " spot_id text NOT NULL,\n"
                 + " status text NOT NULL,\n" 
+                + " payment_method text,\n"
+                + " bank_code text,\n"
                 + " timestamp DATETIME DEFAULT CURRENT_TIMESTAMP\n"
                 + ");";
 
@@ -82,13 +84,15 @@ public class DatabaseHelper {
     }
 
     // --- Ticket Methods (From previous steps) ---
-    public static void saveTicket(String ticketId, String userEmail, String spotId, String status) {
-        String sql = "INSERT INTO tickets(ticket_id, user_email, spot_id, status) VALUES(?,?,?,?)";
+    public static void saveTicket(String ticketId, String userEmail, String spotId, String status, String paymentMethod, String bankCode) {
+        String sql = "INSERT INTO tickets(ticket_id, user_email, spot_id, status, payment_method, bank_code) VALUES(?,?,?,?,?,?)";
         try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, ticketId);
             pstmt.setString(2, userEmail);
             pstmt.setString(3, spotId);
             pstmt.setString(4, status);
+            pstmt.setString(5, paymentMethod);
+            pstmt.setString(6, bankCode);
             pstmt.executeUpdate();
         } catch (SQLException e) {}
     }
@@ -104,7 +108,7 @@ public class DatabaseHelper {
 
     public static java.util.List<java.util.Map<String, String>> getTicketsForUser(String email) {
         java.util.List<java.util.Map<String, String>> tickets = new java.util.ArrayList<>();
-        String sql = "SELECT ticket_id, spot_id, status, timestamp FROM tickets WHERE user_email = ? ORDER BY timestamp DESC";
+        String sql = "SELECT ticket_id, spot_id, status, payment_method, bank_code, timestamp FROM tickets WHERE user_email = ? ORDER BY timestamp DESC";
         try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();
@@ -113,6 +117,8 @@ public class DatabaseHelper {
                 ticket.put("ticketId", rs.getString("ticket_id"));
                 ticket.put("spotId", rs.getString("spot_id"));
                 ticket.put("status", rs.getString("status"));
+                ticket.put("paymentMethod", rs.getString("payment_method"));
+                ticket.put("bankCode", rs.getString("bank_code"));
                 ticket.put("timestamp", rs.getString("timestamp"));
                 tickets.add(ticket);
             }
