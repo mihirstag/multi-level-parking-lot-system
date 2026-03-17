@@ -7,9 +7,10 @@
     <style>
         :root {
             --bg-color: #0b0c10;
-            --surface: rgba(30, 31, 38, 0.4);
+            --surface-color: rgba(30, 31, 38, 0.4);
             --surface-border: rgba(255, 255, 255, 0.08);
-            --primary: #66fcf1;
+            --primary-accent: #66fcf1;
+            --secondary-accent: #45a29e;
             --primary-glow: rgba(102, 252, 241, 0.6);
             --text-main: #ffffff;
             --text-muted: #8b8e98;
@@ -32,10 +33,10 @@
             position: sticky; top: 0; z-index: 1000;
         }
         .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none;}
-        .logo span { color: var(--primary); }
+        .logo span { color: var(--primary-accent); }
         .nav-links { display: flex; gap: 40px; font-size: 15px; font-weight: 500;}
         .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary-accent); }
         .nav-actions { display: flex; gap: 15px; align-items: center;}
         
         .btn-outline-danger { padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255, 107, 107, 0.3); color: #ff6b6b; text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.3s;}
@@ -44,13 +45,13 @@
         .main-container { padding: 40px 6%; }
 
         .title-area h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px;}
-        .title-area h1 span { color: var(--primary); }
+        .title-area h1 span { color: var(--primary-accent); }
         .title-area p { color: var(--text-muted); font-size: 16px; margin-bottom: 40px;}
 
         /* Bookings List */
         .bookings-grid { display: flex; flex-direction: column; gap: 20px; }
         .booking-card {
-            background: var(--surface); backdrop-filter: blur(10px);
+            background: var(--surface-color); backdrop-filter: blur(10px);
             border: 1px solid var(--surface-border);
             padding: 25px 30px; border-radius: 20px;
             display: flex; justify-content: space-between; align-items: center;
@@ -68,12 +69,12 @@
             padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
         }
         .status-paid { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2); }
-        .status-reserved { background: rgba(102, 252, 241, 0.1); color: var(--primary); border: 1px solid rgba(102, 252, 241, 0.2); }
+        .status-reserved { background: rgba(102, 252, 241, 0.1); color: var(--primary-accent); border: 1px solid rgba(102, 252, 241, 0.2); }
         .status-expired { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.2); }
 
         .empty-state { text-align: center; padding: 60px 0; color: var(--text-muted); }
         .empty-state h3 { font-size: 20px; color: var(--text-main); margin-bottom: 10px;}
-        .empty-state a { display: inline-block; margin-top: 20px; color: var(--bg-color); background: var(--primary); padding: 12px 24px; border-radius: 30px; text-decoration: none; font-weight: 700; }
+        .empty-state a { display: inline-block; margin-top: 20px; color: var(--bg-color); background: var(--primary-accent); padding: 12px 24px; border-radius: 30px; text-decoration: none; font-weight: 700; }
     </style>
 </head>
 <body>

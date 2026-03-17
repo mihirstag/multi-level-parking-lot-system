@@ -11,6 +11,7 @@ A full-stack Spring Boot web application for managing a modern, multi-level park
   - View available spots across multiple floors on the Live Map.
   - ***Dynamic DOM Rendering***: Booked spots are physically removed from the UI to prevent clutter.
   - ***Time-based Expiry***: Spots automatically free themselves after the booked duration (hours) expires.
+  - ***Cross-Session Persistence***: Active bookings are synchronized from the database on startup, ensuring the Live Map remains perfectly accurate even if the server restarts.
 - **Diverse Spot Types**: Supports various spot types including Compact, Large, Handicapped, and EV Charging spots.
 - **Booking & Checkout System**: 
   - Select single or multiple parking spots dynamically.
@@ -18,7 +19,7 @@ A full-stack Spring Boot web application for managing a modern, multi-level park
   - Automatic fee calculation (e.g., ₹50/hour per spot).
 - **Payment Processing**: Process upfront payments and instantly generate parking tickets linked to the user's account.
 - **My Bookings Portal**: A dedicated page for users to view their active and past parking tickets, complete with timestamps and status tracking.
-- **Database Integration**: Embedded SQLite database (`parkinglot.db`) for persistent storage of users and strictly related tickets.
+- **Database Integration**: Embedded SQLite database (`parkinglot.db`) for persistent storage of users and tickets. Tracks explicit `expiry_time_millis` for all bookings to enable accurate cross-session server synchronization.
 
 ## Technologies Used
 

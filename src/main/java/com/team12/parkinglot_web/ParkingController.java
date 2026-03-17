@@ -31,6 +31,8 @@ public class ParkingController {
                 lot.addFloor(floor);
             }
         }
+        // Force sync spots from the DB to restore states (Fixes Live Map bug across restarts)
+        DatabaseHelper.syncActiveSpots(lot);
     }
 
     @GetMapping("/")
@@ -103,7 +105,8 @@ public class ParkingController {
                     floor.updateDisplay(); 
                     String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
                     String userEmail = (String) session.getAttribute("userEmail");
-                    DatabaseHelper.saveTicket(ticketId, userEmail, spotId, "RESERVED");
+                    long expiryTimeMillis = System.currentTimeMillis() + (1 * 60 * 60 * 1000L); // 1 Hour
+                    DatabaseHelper.saveTicket(ticketId, userEmail, spotId, "RESERVED", null, null, expiryTimeMillis);
                 }
             }
         }
@@ -170,7 +173,8 @@ public class ParkingController {
                         // Generate a ticket and save it instantly as PAID
                         String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
                         String userEmail = (String) session.getAttribute("userEmail");
-                        DatabaseHelper.saveTicket(ticketId, userEmail, spotId, "PAID", paymentMethod, bankCode);
+                        long expiryTimeMillis = System.currentTimeMillis() + (hours * 60 * 60 * 1000L);
+                        DatabaseHelper.saveTicket(ticketId, userEmail, spotId, "PAID", paymentMethod, bankCode, expiryTimeMillis);
                     }
                 }
             }

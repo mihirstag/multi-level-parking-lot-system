@@ -6,12 +6,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Inline styles similar to login.html to save lines in this edit -->
     <style>
-        :root { --bg-color: #0b0c10; --primary: #66fcf1; --secondary: #45a29e; --surface: rgba(30, 31, 38, 0.6); --text-main: #ffffff; --text-muted: #8b8e98; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { 
-            background-color: var(--bg-color); color: var(--text-main); 
-            min-height: 100vh;
-            background-image: radial-gradient(circle at 90% 20%, rgba(102, 252, 241, 0.08), transparent 40%); 
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(30, 31, 38, 0.6);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary-accent: #66fcf1;
+            --secondary-accent: #45a29e;
+            --primary-glow: rgba(102, 252, 241, 0.4);
+            --text-main: #ffffff;
+            --text-muted: #8b8e98;
         }
         
         /* Glass Navbar (Unified) */
@@ -24,25 +27,25 @@
             position: sticky; top: 0; z-index: 100;
         }
         .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: 10px;}
-        .logo span { color: var(--primary); }
+        .logo span { color: var(--primary-accent); }
         .nav-links { display: flex; gap: 40px; font-size: 15px; font-weight: 500;}
         .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
-        .nav-links a:hover { color: var(--primary); }
+        .nav-links a:hover { color: var(--primary-accent); }
         .nav-actions { display: flex; gap: 15px; align-items: center;}
         
         .main-content { display: flex; align-items: center; justify-content: center; padding: 60px 20px; min-height: calc(100vh - 80px); }
 
-        .auth-container { background: var(--surface); backdrop-filter: blur(20px); padding: 50px; border-radius: 24px; max-width: 440px; width: 100%; box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); }
+        .auth-container { background: var(--surface-color); backdrop-filter: blur(20px); padding: 50px; border-radius: 24px; max-width: 440px; width: 100%; box-shadow: 0 30px 60px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); }
         h2 { font-size: 28px; font-weight: 700; margin-bottom: 10px; text-align: center;}
         p.subtitle { color: var(--text-muted); font-size: 15px; margin-bottom: 30px; text-align: center; }
         .form-row { display: flex; gap: 15px; margin-bottom: 20px;}
         .form-group { flex: 1; position: relative; margin-bottom: 20px;}
         .form-group label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
         .form-control { width: 100%; padding: 16px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 15px; transition: 0.3s; outline: none; }
-        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(102, 252, 241, 0.1); }
-        .btn-submit { display: block; width: 100%; padding: 18px; margin-top: 10px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: var(--bg-color); border: none; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; box-shadow: 0 10px 20px rgba(102, 252, 241, 0.2); }
+        .form-control:focus { border-color: var(--primary-accent); box-shadow: 0 0 0 4px rgba(102, 252, 241, 0.1); }
+        .btn-submit { display: block; width: 100%; padding: 18px; margin-top: 10px; background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent)); color: var(--bg-color); border: none; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 700; box-shadow: 0 10px 20px rgba(102, 252, 241, 0.2); }
         .auth-links { margin-top: 30px; text-align: center; font-size: 14px; color: var(--text-muted); }
-        .auth-links a { color: var(--primary); text-decoration: none; font-weight: 600; margin-left: 5px; }
+        .auth-links a { color: var(--primary-accent); text-decoration: none; font-weight: 600; margin-left: 5px; }
         .alert-error { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; text-align: center; }
     </style>
 </head>
@@ -56,7 +59,7 @@
             <a href="#">Locations</a>
         </div>
         <div class="nav-actions">
-            <a href="/login" style="color: var(--primary); font-weight: 600; text-decoration: none;">Sign In</a>
+            <a href="/login" style="color: var(--primary-accent); font-weight: 600; text-decoration: none;">Sign In</a>
         </div>
     </nav>
 
