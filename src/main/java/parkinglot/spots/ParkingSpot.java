@@ -25,6 +25,10 @@ public class ParkingSpot {
     public void release() {
         this.status = SpotStatus.AVAILABLE;
     }
+
+    public void occupy() {
+        this.status = SpotStatus.OCCUPIED;
+    }
     
     // Add this missing getter right here!
     public String getId() {

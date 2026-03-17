@@ -5,7 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 
 import parkinglot.core.ParkingFloor;
 import parkinglot.core.ParkingLot;
@@ -42,7 +42,6 @@ public class ParkingController {
     @GetMapping("/register")
     public String showRegister() { return "register"; }
 
-    // --- NEW: Process Registration ---
     @PostMapping("/process-register")
     public String processRegister(@RequestParam("firstName") String firstName, 
                                   @RequestParam("lastName") String lastName, 
@@ -53,13 +52,12 @@ public class ParkingController {
         return "redirect:/register?error=true";
     }
 
-    // --- NEW: Process Login & Create Session ---
     @PostMapping("/process-login")
     public String processLogin(@RequestParam("email") String email, 
                                @RequestParam("password") String password, 
                                HttpSession session) {
         if (DatabaseHelper.loginDriver(email, password)) {
-            session.setAttribute("userEmail", email); // User is logged in!
+            session.setAttribute("userEmail", email);
             return "redirect:/dashboard/driver";
         }
         return "redirect:/login?error=true";
@@ -67,15 +65,13 @@ public class ParkingController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
-        session.invalidate(); // Destroy session
+        session.invalidate();
         return "redirect:/login";
     }
 
-    // --- DASHBOARD ---
     @GetMapping("/dashboard/driver")
     public String viewDriverDashboard(HttpSession session, Model model) {
-        if (session.getAttribute("userEmail") == null) return "redirect:/login"; // Security block!
-        
+        if (session.getAttribute("userEmail") == null) return "redirect:/login";
         model.addAttribute("systemName", "Driver Portal");
         model.addAttribute("welcomeMessage", "Welcome, " + session.getAttribute("userEmail") + "!");
         return "dashboard"; 
@@ -83,42 +79,38 @@ public class ParkingController {
 
     @GetMapping("/spots")
     public String viewSpots(HttpSession session, Model model) {
-        if (session.getAttribute("userEmail") == null) return "redirect:/login"; // Security block!
-        
+        if (session.getAttribute("userEmail") == null) return "redirect:/login";
         ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
+        
+        // Reset all spots to available first, then mark reserved spots (so paid spots become green again)
+        java.util.List<String> reservedSpots = DatabaseHelper.getReservedSpots();
+        for (ParkingFloor floor : lot.getFloors()) {
+            for (ParkingSpot spot : floor.getSpots()) {
+                spot.release(); // Always reset to available on each render
+                if (reservedSpots.contains(spot.getId())) {
+                    spot.book(); // Reserved but not paid
+                }
+            }
+        }
+        
         model.addAttribute("floors", lot.getFloors());
         return "spots";
     }
 
-    // --- FIXED: Book Spot (No double booking!) ---
-    @PostMapping("/book")
-    public String bookSpot(@RequestParam("spotId") String spotId, HttpSession session) {
-        if (session.getAttribute("userEmail") == null) return "redirect:/login";
-        
-        ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
-        for (ParkingFloor floor : lot.getFloors()) {
-            for (ParkingSpot spot : floor.getSpots()) {
-                if (spot.getId().equals(spotId) && spot.isFree()) {
-                    spot.book(); // Status goes to RESERVED. Prevents double booking.
-                    floor.updateDisplay(); 
-                    String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-                    DatabaseHelper.saveTicket(ticketId, spotId, "RESERVED");
-                }
-            }
-        }
-        return "redirect:/spots"; // Stay on map!
-    }
-
-    // 1. New Multi-Spot Checkout (POST instead of GET)
     @PostMapping("/checkout")
     public String processCart(@RequestParam("selectedSpots") String selectedSpots, 
                               @RequestParam("hours") int hours, 
                               Model model) {
-        // Split the comma-separated string into an array (e.g., ["F1-C1", "F1-C2"])
         String[] spotsArray = selectedSpots.split(",");
-        
-        // Calculate the fee: (Number of spots) * (Hours) * (₹50 per hour)
         double totalFee = spotsArray.length * hours * 50.0; 
+        
+        // Reserve all spots when user goes to checkout
+        for (String spotId : spotsArray) {
+            spotId = spotId.trim();
+            String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+            DatabaseHelper.saveReservation(ticketId, spotId);
+            model.addAttribute("ticketId_" + spotId, ticketId); // Store for payment
+        }
         
         model.addAttribute("selectedSpots", selectedSpots);
         model.addAttribute("hours", hours);
@@ -128,31 +120,44 @@ public class ParkingController {
         return "checkout";
     }
 
-    // 2. Process Upfront Payment for All Spots
     @PostMapping("/pay")
-    public String finalizePayment(@RequestParam("selectedSpots") String selectedSpots, HttpSession session) {
+    public String finalizePayment(@RequestParam("selectedSpots") String selectedSpots, 
+                                  @RequestParam("fee") double fee,
+                                  HttpSession session) {
         if (session.getAttribute("userEmail") == null) return "redirect:/login";
         
         ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
         String[] spotsArray = selectedSpots.split(",");
         
-        // Loop through every spot the user selected
         for (String spotId : spotsArray) {
             spotId = spotId.trim();
             for (ParkingFloor floor : lot.getFloors()) {
                 for (ParkingSpot spot : floor.getSpots()) {
                     if (spot.getId().equals(spotId) && spot.isFree()) {
-                        
-                        spot.book(); // Marks the spot as yellow/unavailable on the map
+                        spot.book(); 
                         floor.updateDisplay();
                         
-                        // Generate a ticket and save it instantly as PAID
                         String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+                        // Save the payment record and the ticket
                         DatabaseHelper.saveTicket(ticketId, spotId, "PAID");
+                        DatabaseHelper.savePayment(ticketId, fee / spotsArray.length); 
                     }
                 }
             }
         }
-        return "redirect:/dashboard/driver?payment=success";
+        // Redirect to the dedicated success page
+        return "redirect:/payment-success";
+    }
+
+    @GetMapping("/payment-success")
+    public String showSuccessPage(HttpSession session) {
+        if (session.getAttribute("userEmail") == null) return "redirect:/login";
+        return "payment"; 
+    }
+
+    @GetMapping("/payment")
+    public String showPaymentForm(HttpSession session, Model model) {
+        if (session.getAttribute("userEmail") == null) return "redirect:/login";
+        return "payment";
     }
 }

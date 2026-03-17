@@ -8,8 +8,9 @@
         .checkout-card { background: #2a2935; padding: 40px; border-radius: 12px; max-width: 450px; margin: auto; box-shadow: 0px 10px 30px rgba(0,0,0,0.3); border: 1px solid #383747;}
         .price { font-size: 42px; color: #2ecc71; font-weight: bold; margin: 20px 0; }
         .spot-details { font-size: 16px; color: #a0a0b0; margin-bottom: 30px; line-height: 1.6; background: #1e1d2b; padding: 15px; border-radius: 8px;}
-        .pay-btn { background-color: #7b61ff; color: white; border: none; padding: 15px 30px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; transition: 0.3s; }
-        .pay-btn:hover { background-color: #694ce6; }
+        /* Fixed class name from .pay-btn to .btn to match your button */
+        .btn { background-color: #7b61ff; color: white; border: none; padding: 15px 30px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn:hover { background-color: #694ce6; }
         .cancel-link { display: inline-block; margin-top: 20px; color: #ff4757; text-decoration: none; font-size: 14px; }
         h2 { margin-bottom: 15px; }
     </style>
@@ -20,21 +21,27 @@
         <h2>Booking Summary</h2>
         
         <div class="spot-details">
-            Reserving <strong><span th:text="${spotCount}"></span> spot(s)</strong> for <strong><span th:text="${hours}"></span> hour(s)</strong>.<br>
-            <span style="font-size: 13px; color: #7b61ff;">Spots: <span th:text="${selectedSpots}"></span></span>
+            Reserving <strong><span th:text="${spotCount}">1</span> spot(s)</strong> for <strong><span th:text="${hours}">2</span> hour(s)</strong>.<br>
+            <span style="font-size: 13px; color: #7b61ff;">Spots: <span th:text="${selectedSpots}">A1, A2</span></span>
         </div>
         
         <div class="price">
-            ₹<span th:text="${fee}"></span>
+            ₹<span th:text="${fee}">500</span>
         </div>
         
-        <form th:action="@{/pay}" method="post">
-            <input type="hidden" name="selectedSpots" th:value="${selectedSpots}" />
-            <button type="submit" class="pay-btn">Confirm & Pay</button>
-        </form>
+        <div id="payment-form">
+            <button type="button" class="btn" onclick="goBackToSpots()">✓ Reserve Now</button>
+        </div>
         
-        <a href="/spots" class="cancel-link">Cancel Checkout</a>
+        <a th:href="@{/spots}" class="cancel-link">Cancel Checkout</a>
     </div>
+
+<script th:inline="javascript">
+function goBackToSpots() {
+    // Redirect back to spots page where reserved spots will show as booked
+    window.location.href = "/spots";
+}
+</script>
 
 </body>
 </html>

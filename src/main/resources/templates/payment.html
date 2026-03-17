@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Payment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            background-color: #1e1d2b;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            padding: 50px 20px;
+        }
+        
+        .payment-card {
+            background: #2a2935;
+            border: 1px solid #383747;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .booking-summary {
+            background: #1e1d2b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .booking-summary strong {
+            color: #7b61ff;
+        }
+
+        .amount-display {
+            font-size: 36px;
+            color: #2ecc71;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .nav-pills .nav-link {
+            color: #a0a0b0;
+            background-color: #383747;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #7b61ff;
+            color: white;
+        }
+
+        .nav-pills-container {
+            margin-bottom: 30px;
+        }
+
+        .form-control, .form-select {
+            background-color: #383747;
+            border-color: #4a4955;
+            color: #fff;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #383747;
+            border-color: #7b61ff;
+            color: #fff;
+            box-shadow: 0 0 0 0.25rem rgba(123, 97, 255, 0.25);
+        }
+
+        .form-control::placeholder {
+            color: #7a7a8f;
+        }
+
+        .form-label {
+            color: #e0e0e5;
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .btn-primary {
+            background-color: #7b61ff;
+            border-color: #7b61ff;
+            padding: 12px 20px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #694ce6;
+            border-color: #694ce6;
+        }
+
+        .cancel-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #ff4757;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .cancel-link:hover {
+            color: #ff6b7a;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .input-group-text {
+            background-color: #383747;
+            border-color: #4a4955;
+            color: #a0a0b0;
+        }
+
+        .form-check-label {
+            color: #e0e0e5;
+            font-weight: 500;
+        }
+
+        .form-check-input {
+            background-color: #383747;
+            border-color: #4a4955;
+        }
+
+        .form-check-input:checked {
+            background-color: #7b61ff;
+            border-color: #7b61ff;
+        }
+
+        .text-muted-custom {
+            color: #a0a0b0;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="payment-card">
+        <h2>Secure Payment</h2>
+        
+        <!-- Booking Summary -->
+        <div class="booking-summary">
+            <div>Reserving <strong id="spotCountDisplay">1</strong> spot(s) for <strong id="hoursDisplay">1</strong> hour(s)</div>
+            <div style="margin-top: 8px; font-size: 12px; color: #7b61ff;">Spots: <span id="spotsDisplay">F1-C5</span></div>
+        </div>
+
+        <div class="amount-display">₹<span id="feeDisplay">50.0</span></div>
+
+        <!-- Tab Navigation -->
+        <div class="nav-pills-container">
+            <ul class="nav nav-pills nav-fill gap-2" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active w-100" id="credit-card-tab" data-bs-toggle="pill" data-bs-target="#credit-card" type="button" role="tab">
+                        <i class="fas fa-credit-card me-2"></i>Credit Card
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link w-100" id="net-banking-tab" data-bs-toggle="pill" data-bs-target="#net-banking" type="button" role="tab">
+                        <i class="fas fa-mobile-alt me-2"></i>Net Banking
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            
+            <!-- Credit Card Tab -->
+            <div class="tab-pane fade show active" id="credit-card" role="tabpanel">
+                <form id="creditCardForm" onsubmit="submitPayment(event)">
+                    <div class="mb-3">
+                        <label class="form-label">Cardholder Name</label>
+                        <input type="text" class="form-control" placeholder="John Doe" id="cardholderName" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Card Number</label>
+                        <input type="text" class="form-control" placeholder="1234 5678 9012 3456" id="cardNumber" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label class="form-label">Expiry Date</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="MM" id="expiryMonth" maxlength="2" required>
+                                <input type="text" class="form-control" placeholder="YY" id="expiryYear" maxlength="2" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">CVV</label>
+                            <input type="text" class="form-control" placeholder="123" id="cvv" maxlength="3" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-4">
+                        <i class="fas fa-lock me-2"></i>Confirm & Pay
+                    </button>
+                </form>
+            </div>
+
+            <!-- Net Banking Tab -->
+            <div class="tab-pane fade" id="net-banking" role="tabpanel">
+                <form id="netBankingForm" onsubmit="submitPayment(event)">
+                    <div class="mb-3">
+                        <label class="form-label">Select Bank</label>
+                        <select class="form-select" id="bankName" required>
+                            <option value="">--Select Your Bank--</option>
+                            <option value="SBI">State Bank of India</option>
+                            <option value="HDFC">HDFC Bank</option>
+                            <option value="ICICI">ICICI Bank</option>
+                            <option value="AXIS">Axis Bank</option>
+                            <option value="KOTAK">Kotak Bank</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Account Number</label>
+                        <input type="text" class="form-control" placeholder="Enter your account number" id="accountNumber" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-4">
+                        <i class="fas fa-lock me-2"></i>Proceed to Bank Gateway
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <a href="/spots" class="cancel-link d-block text-center">
+            <i class="fas fa-times me-1"></i>Cancel Payment
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Get URL parameters
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Populate booking details
+        window.addEventListener('DOMContentLoaded', function() {
+            const spots = getUrlParameter('spots');
+            const hours = getUrlParameter('hours');
+            const fee = getUrlParameter('fee');
+
+            if (spots) {
+                const spotArray = spots.split(',');
+                document.getElementById('spotCountDisplay').textContent = spotArray.length;
+                document.getElementById('spotsDisplay').textContent = spots;
+            }
+            if (hours) document.getElementById('hoursDisplay').textContent = hours;
+            if (fee) document.getElementById('feeDisplay').textContent = fee;
+        });
+
+        // Submit payment form
+        function submitPayment(event) {
+            event.preventDefault();
+            
+            const activeTab = document.querySelector('.nav-link.active').id;
+            let paymentData = {
+                spots: getUrlParameter('spots'),
+                hours: getUrlParameter('hours'),
+                fee: getUrlParameter('fee'),
+                paymentMethod: activeTab === 'credit-card-tab' ? 'CREDIT_CARD' : 'NET_BANKING',
+                paymentDetails: {}
+            };
+
+            if (activeTab === 'credit-card-tab') {
+                paymentData.paymentDetails = {
+                    cardholderName: document.getElementById('cardholderName').value,
+                    cardNumber: document.getElementById('cardNumber').value,
+                    expiryMonth: document.getElementById('expiryMonth').value,
+                    expiryYear: document.getElementById('expiryYear').value,
+                    cvv: document.getElementById('cvv').value
+                };
+            } else {
+                paymentData.paymentDetails = {
+                    bankName: document.getElementById('bankName').value,
+                    accountNumber: document.getElementById('accountNumber').value
+                };
+            }
+
+            // Send to backend
+            fetch('/process-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(paymentData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    // Redirect back to spots page so the driver sees the spot become available again
+                    window.location.href = '/spots?paymentSuccess=true';
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Payment processing failed');
+            });
+        }
+    </script>
+
+</body>
+</html>

@@ -9,7 +9,8 @@ public class ParkingFloor {
     private List<ParkingSpot> spots; // [cite: 74]
     private DisplayBoard display; // [cite: 74]
 
-    public ParkingFloor(int floorNumber) {
+    public ParkingFloor(int floorNumber) 
+    {
         this.floorNumber = floorNumber;
         this.spots = new ArrayList<>();
         this.display = new DisplayBoard();
