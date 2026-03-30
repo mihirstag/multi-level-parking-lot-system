@@ -7,32 +7,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpSession;
 
-import parkinglot.core.ParkingFloor;
-import parkinglot.core.ParkingLot;
-import parkinglot.enums.SpotType;
-import parkinglot.spots.SpotFactory;
-import parkinglot.spots.ParkingSpot;
-import parkinglot.db.DatabaseHelper;
-import java.util.UUID;
+import com.team12.parkinglot_web.service.ParkingApplicationService;
 
 @Controller
 public class ParkingController {
 
-    public ParkingController() {
-        DatabaseHelper.initializeDatabase();
-        ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
-        if (lot.getFloors().isEmpty()) {
-            for (int i = 1; i <= 3; i++) {
-                ParkingFloor floor = new ParkingFloor(i);
-                for (int j = 1; j <= 20; j++) floor.addSpot(SpotFactory.createSpot("F" + i + "-C" + j, SpotType.COMPACT));
-                for (int j = 1; j <= 20; j++) floor.addSpot(SpotFactory.createSpot("F" + i + "-L" + j, SpotType.LARGE));
-                for (int j = 1; j <= 5; j++) floor.addSpot(SpotFactory.createSpot("F" + i + "-H" + j, SpotType.HANDICAPPED));
-                for (int j = 1; j <= 5; j++) floor.addSpot(SpotFactory.createSpot("F" + i + "-E" + j, SpotType.EV_CHARGING));
-                lot.addFloor(floor);
-            }
-        }
-        // Force sync spots from the DB to restore states (Fixes Live Map bug across restarts)
-        DatabaseHelper.syncActiveSpots(lot);
+    private final ParkingApplicationService parkingApplicationService;
+
+    public ParkingController(ParkingApplicationService parkingApplicationService) {
+        this.parkingApplicationService = parkingApplicationService;
     }
 
     @GetMapping("/")
@@ -50,7 +33,7 @@ public class ParkingController {
                                   @RequestParam("lastName") String lastName, 
                                   @RequestParam("email") String email, 
                                   @RequestParam("password") String password) {
-        boolean success = DatabaseHelper.registerDriver(firstName + " " + lastName, email, password);
+        boolean success = parkingApplicationService.registerDriver(firstName, lastName, email, password);
         if(success) return "redirect:/login?registered=true";
         return "redirect:/register?error=true";
     }
@@ -60,7 +43,7 @@ public class ParkingController {
     public String processLogin(@RequestParam("email") String email, 
                                @RequestParam("password") String password, 
                                HttpSession session) {
-        if (DatabaseHelper.loginDriver(email, password)) {
+        if (parkingApplicationService.loginDriver(email, password)) {
             session.setAttribute("userEmail", email); // User is logged in!
             return "redirect:/dashboard/driver";
         }
@@ -87,8 +70,7 @@ public class ParkingController {
     public String viewSpots(HttpSession session, Model model) {
         if (session.getAttribute("userEmail") == null) return "redirect:/login"; // Security block!
         
-        ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
-        model.addAttribute("floors", lot.getFloors());
+        model.addAttribute("floors", parkingApplicationService.getFloors());
         return "spots";
     }
 
@@ -96,20 +78,9 @@ public class ParkingController {
     @PostMapping("/book")
     public String bookSpot(@RequestParam("spotId") String spotId, HttpSession session) {
         if (session.getAttribute("userEmail") == null) return "redirect:/login";
-        
-        ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
-        for (ParkingFloor floor : lot.getFloors()) {
-            for (ParkingSpot spot : floor.getSpots()) {
-                if (spot.getId().equals(spotId) && spot.isFree()) {
-                    spot.book(1); // Default to 1 hour reservation for now
-                    floor.updateDisplay(); 
-                    String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-                    String userEmail = (String) session.getAttribute("userEmail");
-                    long expiryTimeMillis = System.currentTimeMillis() + (1 * 60 * 60 * 1000L); // 1 Hour
-                    DatabaseHelper.saveTicket(ticketId, userEmail, spotId, "RESERVED", null, null, expiryTimeMillis);
-                }
-            }
-        }
+
+        String userEmail = (String) session.getAttribute("userEmail");
+        parkingApplicationService.bookSpot(spotId, userEmail);
         return "redirect:/spots"; // Stay on map!
     }
 
@@ -118,16 +89,12 @@ public class ParkingController {
     public String processCart(@RequestParam("selectedSpots") String selectedSpots, 
                               @RequestParam("hours") int hours, 
                               Model model) {
-        // Split the comma-separated string into an array (e.g., ["F1-C1", "F1-C2"])
-        String[] spotsArray = selectedSpots.split(",");
-        
-        // Calculate the fee: (Number of spots) * (Hours) * (₹50 per hour)
-        double totalFee = spotsArray.length * hours * 50.0; 
-        
-        model.addAttribute("selectedSpots", selectedSpots);
-        model.addAttribute("hours", hours);
-        model.addAttribute("fee", totalFee);
-        model.addAttribute("spotCount", spotsArray.length);
+        ParkingApplicationService.CheckoutSummary checkoutSummary = parkingApplicationService.buildCheckoutSummary(selectedSpots, hours);
+
+        model.addAttribute("selectedSpots", checkoutSummary.getSelectedSpots());
+        model.addAttribute("hours", checkoutSummary.getHours());
+        model.addAttribute("fee", checkoutSummary.getFee());
+        model.addAttribute("spotCount", checkoutSummary.getSpotCount());
         
         return "checkout";
     }
@@ -137,13 +104,12 @@ public class ParkingController {
     public String showPaymentForm(@RequestParam("selectedSpots") String selectedSpots,
                                   @RequestParam("hours") int hours,
                                   Model model) {
-        String[] spotsArray = selectedSpots.split(",");
-        double totalFee = spotsArray.length * hours * 50.0;
+        ParkingApplicationService.CheckoutSummary checkoutSummary = parkingApplicationService.buildCheckoutSummary(selectedSpots, hours);
 
-        model.addAttribute("selectedSpots", selectedSpots);
-        model.addAttribute("hours", hours);
-        model.addAttribute("fee", totalFee);
-        model.addAttribute("spotCount", spotsArray.length);
+        model.addAttribute("selectedSpots", checkoutSummary.getSelectedSpots());
+        model.addAttribute("hours", checkoutSummary.getHours());
+        model.addAttribute("fee", checkoutSummary.getFee());
+        model.addAttribute("spotCount", checkoutSummary.getSpotCount());
         
         return "payment";
     }
@@ -156,29 +122,9 @@ public class ParkingController {
                                   @RequestParam(value = "bankCode", required = false) String bankCode,
                                   HttpSession session) {
         if (session.getAttribute("userEmail") == null) return "redirect:/login";
-        
-        ParkingLot lot = ParkingLot.getInstance("123 Tech Park, Bengaluru");
-        String[] spotsArray = selectedSpots.split(",");
-        
-        // Loop through every spot the user selected
-        for (String spotId : spotsArray) {
-            spotId = spotId.trim();
-            for (ParkingFloor floor : lot.getFloors()) {
-                for (ParkingSpot spot : floor.getSpots()) {
-                    if (spot.getId().equals(spotId) && spot.isFree()) {
-                        
-                        spot.book(hours); // Marks the spot as yellow/unavailable on the map and sets expiry
-                        floor.updateDisplay();
-                        
-                        // Generate a ticket and save it instantly as PAID
-                        String ticketId = "TKT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-                        String userEmail = (String) session.getAttribute("userEmail");
-                        long expiryTimeMillis = System.currentTimeMillis() + (hours * 60 * 60 * 1000L);
-                        DatabaseHelper.saveTicket(ticketId, userEmail, spotId, "PAID", paymentMethod, bankCode, expiryTimeMillis);
-                    }
-                }
-            }
-        }
+
+        String userEmail = (String) session.getAttribute("userEmail");
+        parkingApplicationService.finalizePayment(selectedSpots, hours, paymentMethod, bankCode, userEmail);
         return "redirect:/success";
     }
 
@@ -193,7 +139,7 @@ public class ParkingController {
         String userEmail = (String) session.getAttribute("userEmail");
         if (userEmail == null) return "redirect:/login";
         
-        java.util.List<java.util.Map<String, String>> tickets = DatabaseHelper.getTicketsForUser(userEmail);
+        java.util.List<java.util.Map<String, String>> tickets = parkingApplicationService.getTicketsForUser(userEmail);
         model.addAttribute("tickets", tickets);
         return "bookings";
     }

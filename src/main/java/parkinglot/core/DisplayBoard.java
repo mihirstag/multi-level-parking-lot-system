@@ -7,11 +7,11 @@ public class DisplayBoard implements Observer {
 
     @Override
     public void updateCount(int count) {
-        this.freeSpots = count; // Updates automatically [cite: 82, 110]
-        showFreeSpots(); // [cite: 83]
+        this.freeSpots = count;
+        showFreeSpots();
     }
 
     public void showFreeSpots() {
-        System.out.println("Display Board: Currently " + freeSpots + " free spots available."); // [cite: 83]
+        System.out.println("Display Board: Currently " + freeSpots + " free spots available.");
     }
 }

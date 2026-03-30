@@ -4,17 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ParkingLot {
-    private static ParkingLot instance; // Singleton instance [cite: 67]
-    private String address; // [cite: 67]
-    private List<ParkingFloor> floors; // [cite: 67]
+    private static ParkingLot instance;
+    private String address;
+    private List<ParkingFloor> floors;
 
-    // Private constructor ensures single point of access [cite: 56]
     private ParkingLot(String address) {
         this.address = address;
         this.floors = new ArrayList<>();
     }
 
-    // Standard Singleton getInstance method [cite: 65, 67]
     public static ParkingLot getInstance(String address) {
         if (instance == null) {
             instance = new ParkingLot(address);
@@ -26,9 +24,12 @@ public class ParkingLot {
         floors.add(floor);
     }
 
-    public int getAvailableSpots() { // [cite: 68]
-        // Logic to aggregate available spots across all floors
-        return 0; // Placeholder for logic
+    public int getAvailableSpots() {
+        int totalFreeSpots = 0;
+        for (ParkingFloor floor : floors) {
+            totalFreeSpots += (int) floor.getSpots().stream().filter(spot -> spot.isFree()).count();
+        }
+        return totalFreeSpots;
     }
     public List<ParkingFloor> getFloors() {
         return floors;
