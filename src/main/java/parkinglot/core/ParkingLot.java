@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ParkingLot {
-    private static ParkingLot instance;
-    private String address;
-    private List<ParkingFloor> floors;
+    private static volatile ParkingLot instance;
+    private final String address;
+    private final List<ParkingFloor> floors;
 
     private ParkingLot(String address) {
         this.address = address;
@@ -15,7 +15,11 @@ public class ParkingLot {
 
     public static ParkingLot getInstance(String address) {
         if (instance == null) {
-            instance = new ParkingLot(address);
+            synchronized (ParkingLot.class) {
+                if (instance == null) {
+                    instance = new ParkingLot(address);
+                }
+            }
         }
         return instance;
     }

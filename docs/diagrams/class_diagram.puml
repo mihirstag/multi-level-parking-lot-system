@@ -1,0 +1,47 @@
+@startuml
+
+package "Web Layer" {
+  class ParkingController
+  class ParkingApplicationService
+  class PaymentRequest
+  class PaymentProcessorAdapter
+}
+
+package "Domain Layer" {
+  class ParkingLot
+  class ParkingFloor
+  class ParkingSpot
+  class Ticket
+}
+
+package "Contracts" {
+  interface PaymentStrategy
+  interface Observer
+}
+
+package "Payments" {
+  class Payment
+  class CreditCardPayment
+  class NetBankingPayment
+}
+
+package "Persistence" {
+  class DatabaseHelper
+}
+
+ParkingController --> ParkingApplicationService
+ParkingController --> PaymentRequest
+ParkingApplicationService --> PaymentProcessorAdapter
+ParkingApplicationService --> DatabaseHelper
+ParkingApplicationService --> ParkingLot
+ParkingLot "1" o-- "*" ParkingFloor
+ParkingFloor "1" o-- "*" ParkingSpot
+ParkingFloor --> Observer
+ParkingSpot --> Ticket
+
+PaymentProcessorAdapter --> Payment
+Payment --> PaymentStrategy
+CreditCardPayment ..|> PaymentStrategy
+NetBankingPayment ..|> PaymentStrategy
+
+@enduml

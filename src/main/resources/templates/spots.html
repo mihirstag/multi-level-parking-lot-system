@@ -50,6 +50,20 @@
         .title-area h1 span { color: var(--primary-accent); }
         .title-area p { color: var(--text-muted); font-size: 16px; margin-bottom: 40px;}
 
+        .notice {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .notice-warn {
+            background: rgba(255, 107, 107, 0.12);
+            color: #ffb3b3;
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+
         /* Floors Grid */
         .floor-container { 
             background: var(--surface-color); backdrop-filter: blur(10px);
@@ -126,6 +140,10 @@
             <h1>Select <span>Spots</span></h1>
             <p>Tap available spots to add them to your reservation queue. Booked spots are automatically removed from this view.</p>
         </div>
+
+        <div th:if="${param.bookError != null}" class="notice notice-warn">Unable to reserve that spot. It may already be booked.</div>
+        <div th:if="${param.cartError != null}" class="notice notice-warn">Please select valid spot IDs and booking duration before checkout.</div>
+        <div th:if="${param.paymentError != null}" class="notice notice-warn">Payment was not completed. Re-check your details and try again.</div>
 
         <div th:each="floor : ${floors}" class="floor-container">
             <div class="floor-header">

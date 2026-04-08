@@ -1,0 +1,16 @@
+@startuml
+start
+:Open Live Map;
+:Fetch floors and available spots;
+:Select one or more spots;
+:Enter parking hours;
+:Validate spot IDs and hours;
+if (Valid cart?) then (yes)
+  :Build checkout summary;
+  :Calculate fee = spots x hours x rate;
+  :Render checkout page;
+else (no)
+  :Show cart validation error;
+endif
+stop
+@enduml

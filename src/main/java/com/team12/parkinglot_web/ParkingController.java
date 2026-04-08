@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpSession;
 
+import com.team12.parkinglot_web.payment.PaymentRequest;
 import com.team12.parkinglot_web.service.ParkingApplicationService;
 
 @Controller
@@ -33,9 +34,15 @@ public class ParkingController {
                                   @RequestParam("lastName") String lastName, 
                                   @RequestParam("email") String email, 
                                   @RequestParam("password") String password) {
-        boolean success = parkingApplicationService.registerDriver(firstName, lastName, email, password);
-        if(success) return "redirect:/login?registered=true";
-        return "redirect:/register?error=true";
+        try {
+            boolean success = parkingApplicationService.registerDriver(firstName, lastName, email, password);
+            if (success) {
+                return "redirect:/login?registered=true";
+            }
+            return "redirect:/register?error=exists";
+        } catch (IllegalArgumentException ex) {
+            return "redirect:/register?error=validation";
+        }
     }
 
     // --- NEW: Process Login & Create Session ---
@@ -43,11 +50,15 @@ public class ParkingController {
     public String processLogin(@RequestParam("email") String email, 
                                @RequestParam("password") String password, 
                                HttpSession session) {
-        if (parkingApplicationService.loginDriver(email, password)) {
-            session.setAttribute("userEmail", email); // User is logged in!
-            return "redirect:/dashboard/driver";
+        try {
+            if (parkingApplicationService.loginDriver(email, password)) {
+                session.setAttribute("userEmail", email.trim().toLowerCase());
+                return "redirect:/dashboard/driver";
+            }
+            return "redirect:/login?error=true";
+        } catch (IllegalArgumentException ex) {
+            return "redirect:/login?error=validation";
         }
-        return "redirect:/login?error=true";
     }
 
     @GetMapping("/logout")
@@ -80,8 +91,15 @@ public class ParkingController {
         if (session.getAttribute("userEmail") == null) return "redirect:/login";
 
         String userEmail = (String) session.getAttribute("userEmail");
-        parkingApplicationService.bookSpot(spotId, userEmail);
-        return "redirect:/spots"; // Stay on map!
+        try {
+            boolean booked = parkingApplicationService.bookSpot(spotId, userEmail);
+            if (!booked) {
+                return "redirect:/spots?bookError=unavailable";
+            }
+            return "redirect:/spots";
+        } catch (IllegalArgumentException ex) {
+            return "redirect:/spots?bookError=validation";
+        }
     }
 
     // 1. New Multi-Spot Checkout (POST instead of GET)
@@ -89,14 +107,18 @@ public class ParkingController {
     public String processCart(@RequestParam("selectedSpots") String selectedSpots, 
                               @RequestParam("hours") int hours, 
                               Model model) {
-        ParkingApplicationService.CheckoutSummary checkoutSummary = parkingApplicationService.buildCheckoutSummary(selectedSpots, hours);
+        try {
+            ParkingApplicationService.CheckoutSummary checkoutSummary = parkingApplicationService.buildCheckoutSummary(selectedSpots, hours);
 
-        model.addAttribute("selectedSpots", checkoutSummary.getSelectedSpots());
-        model.addAttribute("hours", checkoutSummary.getHours());
-        model.addAttribute("fee", checkoutSummary.getFee());
-        model.addAttribute("spotCount", checkoutSummary.getSpotCount());
-        
-        return "checkout";
+            model.addAttribute("selectedSpots", checkoutSummary.getSelectedSpots());
+            model.addAttribute("hours", checkoutSummary.getHours());
+            model.addAttribute("fee", checkoutSummary.getFee());
+            model.addAttribute("spotCount", checkoutSummary.getSpotCount());
+
+            return "checkout";
+        } catch (IllegalArgumentException ex) {
+            return "redirect:/spots?cartError=validation";
+        }
     }
 
     // 2. Show payment form (Credit Card / PayPal / Net Banking)
@@ -104,14 +126,18 @@ public class ParkingController {
     public String showPaymentForm(@RequestParam("selectedSpots") String selectedSpots,
                                   @RequestParam("hours") int hours,
                                   Model model) {
-        ParkingApplicationService.CheckoutSummary checkoutSummary = parkingApplicationService.buildCheckoutSummary(selectedSpots, hours);
+        try {
+            ParkingApplicationService.CheckoutSummary checkoutSummary = parkingApplicationService.buildCheckoutSummary(selectedSpots, hours);
 
-        model.addAttribute("selectedSpots", checkoutSummary.getSelectedSpots());
-        model.addAttribute("hours", checkoutSummary.getHours());
-        model.addAttribute("fee", checkoutSummary.getFee());
-        model.addAttribute("spotCount", checkoutSummary.getSpotCount());
-        
-        return "payment";
+            model.addAttribute("selectedSpots", checkoutSummary.getSelectedSpots());
+            model.addAttribute("hours", checkoutSummary.getHours());
+            model.addAttribute("fee", checkoutSummary.getFee());
+            model.addAttribute("spotCount", checkoutSummary.getSpotCount());
+
+            return "payment";
+        } catch (IllegalArgumentException ex) {
+            return "redirect:/spots?cartError=validation";
+        }
     }
 
     // 3. Process Upfront Payment for All Spots
@@ -119,13 +145,37 @@ public class ParkingController {
     public String finalizePayment(@RequestParam("selectedSpots") String selectedSpots, 
                                   @RequestParam("hours") int hours, 
                                   @RequestParam("paymentMethod") String paymentMethod,
+                                  @RequestParam(value = "cardOwner", required = false) String cardOwner,
+                                  @RequestParam(value = "cardNumber", required = false) String cardNumber,
+                                  @RequestParam(value = "expiryMonth", required = false) String expiryMonth,
+                                  @RequestParam(value = "expiryYear", required = false) String expiryYear,
+                                  @RequestParam(value = "cvv", required = false) String cvv,
+                                  @RequestParam(value = "bank", required = false) String bank,
                                   @RequestParam(value = "bankCode", required = false) String bankCode,
                                   HttpSession session) {
         if (session.getAttribute("userEmail") == null) return "redirect:/login";
 
         String userEmail = (String) session.getAttribute("userEmail");
-        parkingApplicationService.finalizePayment(selectedSpots, hours, paymentMethod, bankCode, userEmail);
-        return "redirect:/success";
+        PaymentRequest paymentRequest = new PaymentRequest(
+                paymentMethod,
+                cardOwner,
+                cardNumber,
+                expiryMonth,
+                expiryYear,
+                cvv,
+                bank,
+                bankCode
+        );
+
+        try {
+            boolean success = parkingApplicationService.finalizePayment(selectedSpots, hours, paymentRequest, userEmail);
+            if (success) {
+                return "redirect:/success";
+            }
+            return "redirect:/spots?paymentError=unavailable";
+        } catch (IllegalArgumentException ex) {
+            return "redirect:/spots?paymentError=validation";
+        }
     }
 
     @GetMapping("/success")

@@ -1,0 +1,27 @@
+@startuml
+start
+:Submit payment form;
+:Normalize payment request;
+if (Method == CREDIT_CARD) then (yes)
+  :Validate card owner, number,
+month/year and CVV;
+else (no)
+  :Validate bank and bank code;
+endif
+:Acquire booking lock;
+:Re-check all selected spots are free;
+if (Any unavailable?) then (yes)
+  :Reject payment and release lock;
+  stop
+endif
+:Call PaymentProcessorAdapter;
+if (Payment authorized?) then (yes)
+  :Reserve spots for requested hours;
+  :Save PAID tickets;
+  :Update display board;
+  :Redirect to success;
+else (no)
+  :Show payment failure;
+endif
+stop
+@enduml

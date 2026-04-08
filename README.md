@@ -6,6 +6,7 @@ A full-stack Spring Boot web application for managing a modern, multi-level park
 
 - **Premium UI / UX**: A complete dark-theme aesthetic featuring glassmorphism elements, neon accents, and unified responsive navigation across all pages.
 - **User Authentication**: Secure driver registration and login portal with session tracking.
+- **Credential Security**: Passwords are stored using BCrypt hashing and verified securely during login.
 - **Interactive Dashboard**: Personalized dashboard for logged-in drivers showing their email and active status.
 - **Real-Time Spot Status & Expiry**: 
   - View available spots across multiple floors on the Live Map.
@@ -18,12 +19,14 @@ A full-stack Spring Boot web application for managing a modern, multi-level park
   - Specify parking duration (1-24 hours).
   - Automatic fee calculation (e.g., ₹50/hour per spot).
 - **Payment Processing**: Process upfront payments and instantly generate parking tickets linked to the user's account.
+- **Reliable Booking Semantics**: Booking and payment flows use synchronized reservation handling to prevent duplicate spot assignment under concurrent requests.
 - **My Bookings Portal**: A dedicated page for users to view their active and past parking tickets, complete with timestamps and status tracking.
 - **Database Integration**: Embedded SQLite database (`parkinglot.db`) for persistent storage of users and tickets. Tracks explicit `expiry_time_millis` for all bookings to enable accurate cross-session server synchronization.
+- **Rubric-Ready Artifacts**: UML diagrams, pattern mapping, and principle traceability are included under `docs/`.
 
 ## Technologies Used
 
-- **Backend**: Java 25, Spring Boot (Spring Web MVC)
+- **Backend**: Java 8+ source compatibility (tested with modern JDK), Spring Boot (Spring Web MVC)
 - **Frontend**: HTML5, CSS3 (Vanilla), JavaScript, Thymeleaf templates, Google Inter Font
 - **Database**: SQLite (`org.xerial:sqlite-jdbc`)
 - **Build Tool**: Maven
@@ -43,6 +46,12 @@ The project follows a standard MVC internal structure:
   - `checkout.html`: The payment summary screen.
   - `bookings.html`: The ticket tracking interface.
 - **`src/main/resources/static/images/`**: Contains the local static assets used on the landing page.
+
+## Detailed Documentation
+
+For full architecture internals, workflow explanations, endpoint mapping, data model details, and usage/run/test guidance, see:
+
+- `documentation.md`
 
 ## Prerequisites
 
@@ -92,3 +101,25 @@ The project follows a standard MVC internal structure:
 4. **Live Map**: Click on **Live Map** in your unified top navigation bar. Select one or more spots, choose how many hours you need them for, and click *Review & Pay*.
 5. **Checkout**: Review your selected slots and total fee. Click *Confirm Payment*.
 6. **My Bookings**: Navigate to the **My Bookings** tab to view your active parking tickets, showing the exact spots and timestamps. Wait for your booked hours to pass to see the spots reappear on the Live Map!
+
+## Rubric Coverage Snapshot
+
+- **Analysis and Design Models**:
+  - Use Case Diagram: `docs/diagrams/use_case_diagram.puml`
+  - Class Diagram: `docs/diagrams/class_diagram.puml`
+  - Activity Diagrams: `docs/diagrams/activity_*.puml`
+  - State Diagrams: `docs/diagrams/state_*.puml`
+- **MVC Architecture**:
+  - Controller: `src/main/java/com/team12/parkinglot_web/ParkingController.java`
+  - Service: `src/main/java/com/team12/parkinglot_web/service/ParkingApplicationService.java`
+  - Views: `src/main/resources/templates/*.html`
+- **Design Patterns (implemented in runtime flow)**:
+  - Singleton: `parkinglot/core/ParkingLot.java`
+  - Factory: `parkinglot/spots/SpotFactory.java`
+  - Observer: `parkinglot/core/DisplayBoard.java`
+  - Strategy: `parkinglot/interfaces/PaymentStrategy.java`
+  - Adapter (Structural): `com/team12/parkinglot_web/payment/PaymentProcessorAdapter.java`
+- **Design Principles (documented and traceable)**:
+  - SRP, OCP, DIP, ISP mapped in `RUBRIC_COMPLIANCE.md`
+- **Demo/Explanation Support**:
+  - End-to-end flow and speaking checklist in `PROJECT_OVERVIEW.md` and `RUBRIC_COMPLIANCE.md`

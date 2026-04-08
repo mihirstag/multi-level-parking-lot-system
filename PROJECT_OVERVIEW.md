@@ -42,7 +42,9 @@ The codebase is organized into two main Java package roots:
   - Handles HTTP routes and session checks.
   - Delegates business actions to services.
 - `service/ParkingApplicationService`:
-  - Application-level workflow logic for registration, login, booking, checkout calculation, payment finalization, and booking retrieval.
+  - Application-level workflow logic for validation, registration, login, booking, checkout calculation, atomic reservation handling, payment finalization, and booking retrieval.
+- `payment/PaymentProcessorAdapter`:
+  - Structural Adapter that translates web payment requests into domain `PaymentStrategy` executions.
 - `service/ParkingLotBootstrapService`:
   - Startup bootstrap (`@PostConstruct`) that initializes DB schema, creates default lot/floors/spots if absent in memory, and syncs active reservations from DB.
 
@@ -144,6 +146,22 @@ Static assets are under `src/main/resources/static`.
 - Strategy pattern exists in payment module interfaces/classes.
 - Reservation expiry is enforced in `ParkingSpot.isFree()`.
 - Controller concerns are separated from application workflow concerns through service classes.
+- Adapter pattern is used to integrate web payment forms with strategy-based domain payment handlers.
+- Database initialization is non-destructive and preserves ticket history between restarts.
+- Password handling is secured with BCrypt hashing and verification.
+
+## 8.1 Design Principles Coverage
+
+- **SRP (Single Responsibility Principle)**:
+  - `ParkingController` handles request routing only.
+  - `ParkingApplicationService` handles workflow orchestration.
+  - `PaymentProcessorAdapter` handles payment-shape translation and validation.
+- **OCP (Open/Closed Principle)**:
+  - New payment methods can be added by implementing `PaymentStrategy` without changing payment callers.
+- **DIP (Dependency Inversion Principle)**:
+  - Service depends on payment abstraction via adapter + strategy interfaces instead of concrete gateway internals.
+- **ISP (Interface Segregation Principle)**:
+  - Focused interfaces such as `PaymentStrategy` and `Observer` keep contracts small and purpose-specific.
 
 ## 9. How to Run
 
@@ -183,8 +201,8 @@ Linux/macOS:
 
 ## 11. Current Scope and Limitations
 
-- Password storage is plain text in current implementation and should be replaced with hashing (e.g., BCrypt).
-- Persistence helper is static utility based; could be evolved toward repository/service abstractions.
+- Payment gateways are simulated strategy implementations for educational/demo flow.
+- Persistence helper remains static utility based and can be evolved to Spring Data repositories.
 - Business rules such as pricing and reservation constraints are currently hardcoded.
 - Existing automated test coverage is minimal and can be expanded for controller/service behavior.
 

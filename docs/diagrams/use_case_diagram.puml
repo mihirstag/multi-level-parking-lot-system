@@ -1,0 +1,31 @@
+@startuml
+left to right direction
+
+actor Driver
+actor "Payment Gateway" as Gateway
+
+rectangle "Park Manager System" {
+  usecase "Register Account" as UC_Register
+  usecase "Login" as UC_Login
+  usecase "View Live Map" as UC_Map
+  usecase "Select Spots" as UC_Select
+  usecase "Checkout Summary" as UC_Checkout
+  usecase "Pay for Reservation" as UC_Pay
+  usecase "View My Bookings" as UC_Bookings
+  usecase "Auto-release Expired Spot" as UC_Expiry
+}
+
+Driver --> UC_Register
+Driver --> UC_Login
+Driver --> UC_Map
+Driver --> UC_Select
+Driver --> UC_Checkout
+Driver --> UC_Pay
+Driver --> UC_Bookings
+
+UC_Pay --> Gateway
+UC_Pay .> UC_Select : <<include>>
+UC_Checkout .> UC_Select : <<include>>
+UC_Map .> UC_Expiry : <<extend>>
+
+@enduml

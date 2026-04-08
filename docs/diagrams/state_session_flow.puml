@@ -1,0 +1,7 @@
+@startuml
+[*] --> LOGGED_OUT
+LOGGED_OUT --> LOGGED_IN : successful login
+LOGGED_IN --> ACTIVE : access dashboard/spots
+ACTIVE --> LOGGED_OUT : explicit logout
+ACTIVE --> LOGGED_OUT : session invalidated
+@enduml
