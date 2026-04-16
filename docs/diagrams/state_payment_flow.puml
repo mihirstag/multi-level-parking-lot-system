@@ -1,0 +1,10 @@
+@startuml
+[*] --> INITIATED
+INITIATED --> VALIDATING : submit payment form
+VALIDATING --> AUTHORIZED : valid details + strategy approval
+VALIDATING --> FAILED : validation failure
+AUTHORIZED --> CAPTURED : ticket persistence success
+AUTHORIZED --> FAILED : persistence failure
+CAPTURED --> [*]
+FAILED --> [*]
+@enduml

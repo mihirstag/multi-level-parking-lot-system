@@ -1,0 +1,18 @@
+@startuml
+start
+:Open My Bookings page;
+:Validate active session;
+if (Session valid?) then (yes)
+  :Query tickets by user email;
+  :Sort by latest timestamp;
+  :Render bookings list;
+  if (No tickets?) then (yes)
+    :Show empty state;
+  else (no)
+    :Display status badges and details;
+  endif
+else (no)
+  :Redirect to login;
+endif
+stop
+@enduml

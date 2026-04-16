@@ -1,0 +1,8 @@
+@startuml
+[*] --> AVAILABLE
+AVAILABLE --> RESERVED : book(hours)
+RESERVED --> AVAILABLE : release()
+RESERVED --> AVAILABLE : isFree() after expiry
+RESERVED --> OCCUPIED : vehicle enters
+OCCUPIED --> AVAILABLE : checkout complete
+@enduml

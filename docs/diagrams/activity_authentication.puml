@@ -1,0 +1,26 @@
+@startuml
+start
+:Open register/login page;
+if (New user?) then (yes)
+  :Submit registration form;
+  :Validate names, email, password;
+  if (Valid input?) then (yes)
+    :Hash password with BCrypt;
+    :Insert user into database;
+    :Redirect to login;
+  else (no)
+    :Show validation error;
+  endif
+else (no)
+  :Submit login form;
+  :Validate email + password;
+  :Fetch user password hash;
+  if (Credentials valid?) then (yes)
+    :Create session;
+    :Redirect to dashboard;
+  else (no)
+    :Show login error;
+  endif
+endif
+stop
+@enduml

@@ -1,0 +1,8 @@
+@startuml
+[*] --> CREATED
+CREATED --> RESERVED : spot booked
+RESERVED --> PAID : payment successful
+RESERVED --> EXPIRED : time elapsed
+PAID --> EXPIRED : reservation window elapsed
+EXPIRED --> [*]
+@enduml
