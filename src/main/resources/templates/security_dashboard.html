@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Security Operations - Park Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(30, 31, 38, 0.62);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary-accent: #66fcf1;
+            --secondary-accent: #45a29e;
+            --text-main: #ffffff;
+            --text-muted: #8b8e98;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 14% 12%, rgba(102, 252, 241, 0.08), transparent 42%),
+                              radial-gradient(circle at 88% 80%, rgba(69, 162, 158, 0.09), transparent 42%);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 6%;
+            background: rgba(11, 12, 16, 0.62);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none; }
+        .logo span { color: var(--primary-accent); }
+        .nav-links { display: flex; gap: 30px; font-size: 15px; font-weight: 500; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.25s; }
+        .nav-links a.active, .nav-links a:hover { color: var(--primary-accent); }
+        .btn-outline-danger {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .main {
+            width: min(980px, 92vw);
+            margin: 44px auto 60px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 22px;
+            padding: 26px;
+        }
+        .panel h1 { font-size: 28px; margin-bottom: 8px; }
+        .panel p { color: var(--text-muted); line-height: 1.45; }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+        }
+        .action-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 18px;
+        }
+        .action-card h3 { margin-bottom: 8px; }
+        .action-card p { color: var(--text-muted); font-size: 14px; line-height: 1.45; }
+
+        .cta {
+            margin-top: 12px;
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            color: #0b0c10;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 10px 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+        }
+        th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">Park<span> Manager</span></a>
+        <div class="nav-links">
+            <a href="/dashboard/security" class="active">Dashboard</a>
+            <a href="/security/violation/report">Report Violation</a>
+            <a href="/security/gate-override">Gate Override</a>
+        </div>
+        <div>
+            <span style="font-size: 14px; color: var(--text-muted); margin-right: 14px;" th:text="${session.userEmail}"></span>
+            <a href="/logout" class="btn-outline-danger">Sign Out</a>
+        </div>
+    </nav>
+
+    <main class="main">
+        <section class="panel">
+            <h1 th:text="${systemName}">Security Operations</h1>
+            <p th:text="${welcomeMessage}">Welcome, security guard.</p>
+        </section>
+
+        <section class="actions">
+            <article class="action-card">
+                <h3>Report Parking Violation</h3>
+                <p>Capture unauthorized parking, blocked exits, or safety violations with vehicle and spot context.</p>
+                <a class="cta" href="/security/violation/report">Open Violation Form</a>
+            </article>
+
+            <article class="action-card">
+                <h3>Manual Gate Override</h3>
+                <p>Log emergency gate actions with reason and timestamp for full security auditability.</p>
+                <a class="cta" href="/security/gate-override">Open Gate Override</a>
+            </article>
+        </section>
+
+        <section class="panel">
+            <h2 style="font-size: 20px; margin-bottom: 8px;">Recent Gate Overrides</h2>
+            <p style="color: var(--text-muted);">Latest override actions logged by security operations.</p>
+
+            <table th:if="${recentGateOverrides != null and !recentGateOverrides.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Ref</th>
+                        <th>Gate</th>
+                        <th>Action</th>
+                        <th>Reason</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="g : ${recentGateOverrides}">
+                        <td th:text="${g.logId}">GATE-001</td>
+                        <td th:text="${g.gateId}">G1</td>
+                        <td th:text="${g.action}">OPEN</td>
+                        <td th:text="${g.reason}">Emergency</td>
+                        <td th:text="${g.timestamp}">2026-01-01</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p th:if="${recentGateOverrides == null or recentGateOverrides.isEmpty()}" style="margin-top: 14px; color: var(--text-muted);">No gate overrides logged yet.</p>
+        </section>
+    </main>
+</body>
+</html>

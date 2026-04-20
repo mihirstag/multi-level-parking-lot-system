@@ -24,4 +24,16 @@ public class Driver extends Account {
     public void payFee() { 
         // Successful payment triggers spot reset 
     }
+
+    public String getLicensePlate() {
+        return licensePlate;
+    }
+
+    public String getDlNumber() {
+        return dlNumber;
+    }
+
+    public String getAadharNumber() {
+        return aadharNumber;
+    }
 }

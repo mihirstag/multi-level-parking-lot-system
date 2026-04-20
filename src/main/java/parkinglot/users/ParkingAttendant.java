@@ -5,6 +5,12 @@ public class ParkingAttendant extends Account {
         super(id, name, email, phoneNumber, password); 
     }
 
-    public boolean processCashPayment() { return true; }
-    public void handleLostTicket() { /* Manual override logic */ }
+    public boolean processCashPayment() {
+        System.out.println("ParkingAttendant: cash payment processed at the kiosk.");
+        return true;
+    }
+
+    public void handleLostTicket() {
+        System.out.println("ParkingAttendant: lost ticket workflow initiated.");
+    }
 }

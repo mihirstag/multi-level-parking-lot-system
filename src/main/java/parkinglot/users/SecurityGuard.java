@@ -5,5 +5,7 @@ public class SecurityGuard extends Account {
         super(id, name, email, phoneNumber, password); 
     }
 
-    public void manualGateOverride() { /* Open gates manually */ }
+    public void manualGateOverride() {
+        System.out.println("SecurityGuard: manual gate override executed.");
+    }
 }

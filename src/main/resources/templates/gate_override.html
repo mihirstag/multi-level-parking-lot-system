@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gate Override - Park Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(30, 31, 38, 0.62);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary-accent: #66fcf1;
+            --secondary-accent: #45a29e;
+            --text-main: #ffffff;
+            --text-muted: #8b8e98;
+            --danger: #ff6b6b;
+            --success: #2ecc71;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 10% 20%, rgba(102, 252, 241, 0.08), transparent 40%),
+                              radial-gradient(circle at 90% 78%, rgba(69, 162, 158, 0.08), transparent 40%);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 6%;
+            background: rgba(11, 12, 16, 0.62);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none; }
+        .logo span { color: var(--primary-accent); }
+        .nav-links { display: flex; gap: 28px; font-size: 15px; font-weight: 500; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.25s; }
+        .nav-links a.active, .nav-links a:hover { color: var(--primary-accent); }
+        .btn-outline-danger {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .main {
+            width: min(1100px, 94vw);
+            margin: 38px auto 54px;
+            display: grid;
+            gap: 18px;
+        }
+
+        .panel {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 18px;
+            padding: 22px;
+        }
+
+        h1 { font-size: 26px; margin-bottom: 8px; }
+        p.muted { color: var(--text-muted); line-height: 1.45; margin-bottom: 14px; }
+
+        .notice {
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .notice-success {
+            background: rgba(46, 204, 113, 0.12);
+            border: 1px solid rgba(46, 204, 113, 0.32);
+            color: var(--success);
+        }
+        .notice-error {
+            background: rgba(255, 107, 107, 0.12);
+            border: 1px solid rgba(255, 107, 107, 0.32);
+            color: var(--danger);
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .full { grid-column: 1 / -1; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(0, 0, 0, 0.28);
+            color: var(--text-main);
+            border-radius: 10px;
+            padding: 11px 12px;
+            outline: none;
+        }
+        textarea { min-height: 88px; resize: vertical; }
+
+        .submit {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #0b0c10;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td {
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+        }
+        th {
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">Park<span> Manager</span></a>
+        <div class="nav-links">
+            <a href="/dashboard/security">Dashboard</a>
+            <a href="/security/violation/report">Report Violation</a>
+            <a href="/security/gate-override" class="active">Gate Override</a>
+        </div>
+        <div>
+            <span style="font-size: 14px; color: var(--text-muted); margin-right: 14px;" th:text="${session.userEmail}"></span>
+            <a href="/logout" class="btn-outline-danger">Sign Out</a>
+        </div>
+    </nav>
+
+    <main class="main">
+        <section class="panel">
+            <h1>Manual Gate Override</h1>
+            <p class="muted">Use only for emergency handling or controlled manual intervention.</p>
+
+            <div th:if="${successMessage != null}" class="notice notice-success" th:text="${successMessage}">Success message</div>
+            <div th:if="${errorMessage != null}" class="notice notice-error" th:text="${errorMessage}">Error message</div>
+
+            <form action="/security/gate-override" method="post">
+                <div>
+                    <label for="gateId">Gate ID</label>
+                    <input id="gateId" name="gateId" placeholder="G1" required>
+                </div>
+
+                <div>
+                    <label for="action">Action</label>
+                    <select id="action" name="action" required>
+                        <option value="OPEN">OPEN</option>
+                        <option value="CLOSE">CLOSE</option>
+                        <option value="HOLD">HOLD</option>
+                    </select>
+                </div>
+
+                <div class="full">
+                    <label for="reason">Reason</label>
+                    <textarea id="reason" name="reason" placeholder="State why the manual override is required." required></textarea>
+                </div>
+
+                <div class="full">
+                    <button class="submit" type="submit">Log Gate Override</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel">
+            <h2 style="font-size: 20px; margin-bottom: 8px;">Recent Gate Override Logs</h2>
+            <p class="muted">Audit history of all manual gate actions.</p>
+
+            <table th:if="${gateOverrides != null and !gateOverrides.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Ref</th>
+                        <th>Gate</th>
+                        <th>Action</th>
+                        <th>Reason</th>
+                        <th>By</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="g : ${gateOverrides}">
+                        <td th:text="${g.logId}">GATE-XXXX</td>
+                        <td th:text="${g.gateId}">G1</td>
+                        <td th:text="${g.action}">OPEN</td>
+                        <td th:text="${g.reason}">Reason</td>
+                        <td th:text="${g.overriddenBy}">guard@parkmanager.com</td>
+                        <td th:text="${g.timestamp}">2026-01-01</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p th:if="${gateOverrides == null or gateOverrides.isEmpty()}" class="muted">No gate override logs yet.</p>
+        </section>
+    </main>
+</body>
+</html>

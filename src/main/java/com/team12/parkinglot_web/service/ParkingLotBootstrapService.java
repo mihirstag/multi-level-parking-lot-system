@@ -19,6 +19,13 @@ public class ParkingLotBootstrapService {
     public void initialize() {
         DatabaseHelper.initializeDatabase();
 
+        DatabaseHelper.ensureUserAccount("System Administrator", "admin@parkmanager.com", "Admin@123",
+            DatabaseHelper.ROLE_ADMIN);
+        DatabaseHelper.ensureUserAccount("Parking Attendant", "attendant@parkmanager.com", "Attend@123",
+            DatabaseHelper.ROLE_ATTENDANT);
+        DatabaseHelper.ensureUserAccount("Security Guard", "guard@parkmanager.com", "Guard@123",
+            DatabaseHelper.ROLE_SECURITY_GUARD);
+
         ParkingLot lot = ParkingLot.getInstance(LOT_ADDRESS);
         if (lot.getFloors().isEmpty()) {
             for (int i = 1; i <= 3; i++) {

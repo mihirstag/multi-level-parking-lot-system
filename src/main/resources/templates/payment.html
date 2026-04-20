@@ -152,7 +152,7 @@
         <div class="payment-card">
             <div class="payment-header text-center">
                 <h1>Secure Payment</h1>
-                <p class="text-muted">Complete your booking by choosing a payment method below.</p>
+                <p class="text-muted">Complete your booking by choosing one of the supported payment methods: credit card, net banking, or cash at kiosk.</p>
             </div>
 
             <div class="payment-summary text-center">
@@ -175,6 +175,11 @@
                                     <i class="fas fa-mobile-alt me-2"></i> Net Banking
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link w-100" id="cash-tab" data-bs-toggle="pill" data-bs-target="#cash" type="button" role="tab" aria-selected="false">
+                                    <i class="fas fa-money-bill-wave me-2"></i> Cash
+                                </button>
+                            </li>
                         </ul>
                     </div>
 
@@ -183,7 +188,11 @@
                         <!-- Credit Card -->
                         <div class="tab-pane fade show active" id="credit-card" role="tabpanel" aria-labelledby="credit-card-tab">
                             <form th:action="@{/pay}" method="post">
-                                <input type="hidden" name="selectedSpots" th:value="${selectedSpots}" />
+                                <th:block th:each="selection : ${selections}">
+                                    <input type="hidden" name="spotIds" th:value="${selection.spotId}" />
+                                    <input type="hidden" name="vehicleIds" th:value="${selection.vehicleId}" />
+                                </th:block>
+                                <input type="hidden" name="vehicleType" th:value="${vehicleType}" />
                                 <input type="hidden" name="hours" th:value="${hours}" />
                                 <input type="hidden" name="paymentMethod" value="CREDIT_CARD" />
 
@@ -232,7 +241,11 @@
                         <!-- Net Banking -->
                         <div class="tab-pane fade" id="net-banking" role="tabpanel" aria-labelledby="net-banking-tab">
                             <form th:action="@{/pay}" method="post">
-                                <input type="hidden" name="selectedSpots" th:value="${selectedSpots}" />
+                                <th:block th:each="selection : ${selections}">
+                                    <input type="hidden" name="spotIds" th:value="${selection.spotId}" />
+                                    <input type="hidden" name="vehicleIds" th:value="${selection.vehicleId}" />
+                                </th:block>
+                                <input type="hidden" name="vehicleType" th:value="${vehicleType}" />
                                 <input type="hidden" name="hours" th:value="${hours}" />
                                 <input type="hidden" name="paymentMethod" value="NET_BANKING" />
 
@@ -268,6 +281,28 @@
                             </form>
                         </div>
 
+                        <!-- Cash -->
+                        <div class="tab-pane fade" id="cash" role="tabpanel" aria-labelledby="cash-tab">
+                            <form th:action="@{/pay}" method="post">
+                                <th:block th:each="selection : ${selections}">
+                                    <input type="hidden" name="spotIds" th:value="${selection.spotId}" />
+                                    <input type="hidden" name="vehicleIds" th:value="${selection.vehicleId}" />
+                                </th:block>
+                                <input type="hidden" name="vehicleType" th:value="${vehicleType}" />
+                                <input type="hidden" name="hours" th:value="${hours}" />
+                                <input type="hidden" name="paymentMethod" value="CASH" />
+
+                                <div class="mb-4 text-start">
+                                    <label class="fw-bold mb-2 d-block">Cash Payment Confirmation</label>
+                                    <p class="text-muted mb-0">This marks your reservation as paid at the kiosk/desk. Keep your ticket ID ready for verification at exit.</p>
+                                </div>
+
+                                <button type="submit" class="pay-btn">
+                                    Confirm Cash Payment
+                                </button>
+                            </form>
+                        </div>
+
                     </div> <!-- End Tab Content -->
                 </div>
 
@@ -286,6 +321,17 @@
                             <div class="d-flex justify-content-between">
                                 <span class="text-muted">Slot IDs</span>
                                 <span th:text="${selectedSpots}"></span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Vehicle Type</span>
+                                <span th:text="${vehicleType}"></span>
+                            </div>
+                            <div class="mt-2">
+                                <div class="text-muted" style="font-size: 12px; margin-bottom: 6px;">Spot to Vehicle Mapping</div>
+                                <div th:each="selection : ${selections}" class="d-flex justify-content-between" style="font-size: 13px; margin-bottom: 4px;">
+                                    <span th:text="${selection.spotId}">F1-C1</span>
+                                    <strong th:text="${selection.vehicleId}">KA01AB1234</strong>
+                                </div>
                             </div>
                         </div>
 

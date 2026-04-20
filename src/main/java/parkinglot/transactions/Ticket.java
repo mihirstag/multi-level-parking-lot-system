@@ -21,6 +21,10 @@ public class Ticket {
         Duration duration = Duration.between(entryTime, exitTime);
         return Math.max(1, duration.toHours()); // Minimum 1 hour
     }
+
+    public String getId() {
+        return id;
+    }
     
     public ParkingSpot getSpot() { return spot; }
 }

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendant Desk - Park Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(30, 31, 38, 0.62);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary-accent: #66fcf1;
+            --secondary-accent: #45a29e;
+            --text-main: #ffffff;
+            --text-muted: #8b8e98;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 10% 15%, rgba(102, 252, 241, 0.09), transparent 42%),
+                              radial-gradient(circle at 90% 70%, rgba(69, 162, 158, 0.09), transparent 38%);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 6%;
+            background: rgba(11, 12, 16, 0.62);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none; }
+        .logo span { color: var(--primary-accent); }
+        .nav-links { display: flex; gap: 30px; font-size: 15px; font-weight: 500; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.25s; }
+        .nav-links a.active, .nav-links a:hover { color: var(--primary-accent); }
+        .btn-outline-danger {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .main {
+            width: min(980px, 92vw);
+            margin: 44px auto 60px;
+            display: grid;
+            gap: 22px;
+        }
+
+        .panel {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 22px;
+            padding: 26px;
+        }
+        .panel h1 { font-size: 28px; margin-bottom: 8px; }
+        .panel p { color: var(--text-muted); line-height: 1.45; }
+
+        .cta {
+            margin-top: 16px;
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            color: #0b0c10;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 11px 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+        }
+        th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">Park<span> Manager</span></a>
+        <div class="nav-links">
+            <a href="/dashboard/attendant" class="active">Dashboard</a>
+            <a href="/attendant/lost-ticket">Handle Lost Ticket</a>
+        </div>
+        <div>
+            <span style="font-size: 14px; color: var(--text-muted); margin-right: 14px;" th:text="${session.userEmail}"></span>
+            <a href="/logout" class="btn-outline-danger">Sign Out</a>
+        </div>
+    </nav>
+
+    <main class="main">
+        <section class="panel">
+            <h1 th:text="${systemName}">Attendant Desk</h1>
+            <p th:text="${welcomeMessage}">Welcome, attendant.</p>
+            <a class="cta" href="/attendant/lost-ticket">Start Lost Ticket Workflow</a>
+        </section>
+
+        <section class="panel">
+            <h2 style="font-size: 20px; margin-bottom: 8px;">Recent Lost Ticket Cases</h2>
+            <p style="color: var(--text-muted);">Latest actions handled by attendant operations.</p>
+
+            <table th:if="${recentCases != null and !recentCases.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Case</th>
+                        <th>Ticket</th>
+                        <th>Spot</th>
+                        <th>User</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${recentCases}">
+                        <td th:text="${c.caseId}">LTC-001</td>
+                        <td th:text="${c.ticketId}">TKT-001</td>
+                        <td th:text="${c.spotId}">F1-C1</td>
+                        <td th:text="${c.userEmail}">driver@x.com</td>
+                        <td th:text="${c.timestamp}">2026-01-01</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p th:if="${recentCases == null or recentCases.isEmpty()}" style="margin-top: 14px; color: var(--text-muted);">No lost ticket cases logged yet.</p>
+        </section>
+    </main>
+</body>
+</html>

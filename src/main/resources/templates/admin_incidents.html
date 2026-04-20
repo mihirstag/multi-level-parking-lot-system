@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Incident Center - Park Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(30, 31, 38, 0.62);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary-accent: #66fcf1;
+            --secondary-accent: #45a29e;
+            --text-main: #ffffff;
+            --text-muted: #8b8e98;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 10% 20%, rgba(102, 252, 241, 0.08), transparent 40%),
+                              radial-gradient(circle at 90% 78%, rgba(69, 162, 158, 0.08), transparent 40%);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 6%;
+            background: rgba(11, 12, 16, 0.62);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none; }
+        .logo span { color: var(--primary-accent); }
+        .nav-links { display: flex; gap: 30px; font-size: 15px; font-weight: 500; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.25s; }
+        .nav-links a.active, .nav-links a:hover { color: var(--primary-accent); }
+        .btn-outline-danger {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .main {
+            width: min(1180px, 95vw);
+            margin: 38px auto 54px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .panel {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        h1 { font-size: 26px; margin-bottom: 8px; }
+        p.muted { color: var(--text-muted); line-height: 1.45; margin-bottom: 10px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td {
+            text-align: left;
+            padding: 9px 7px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 12px;
+            vertical-align: top;
+        }
+        th {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .lookup-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 10px 0 14px;
+            flex-wrap: wrap;
+        }
+        .lookup-form input {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 8px 10px;
+            min-width: 220px;
+            text-transform: uppercase;
+        }
+        .lookup-form button {
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            color: #0b0c10;
+            font-weight: 700;
+            padding: 8px 14px;
+            cursor: pointer;
+        }
+        .lookup-error {
+            color: #ff9b9b;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">Park<span> Manager</span></a>
+        <div class="nav-links">
+            <a href="/dashboard/admin">Dashboard</a>
+            <a href="/admin/incidents" class="active">Incident Center</a>
+        </div>
+        <div>
+            <span style="font-size: 14px; color: var(--text-muted); margin-right: 14px;" th:text="${session.userEmail}"></span>
+            <a href="/logout" class="btn-outline-danger">Sign Out</a>
+        </div>
+    </nav>
+
+    <main class="main">
+        <section class="panel">
+            <h1>Incident Center</h1>
+            <p class="muted">Unified administrative view of security and attendant operations.</p>
+        </section>
+
+        <section class="panel">
+            <h2 style="font-size: 18px;">Violation Reports</h2>
+            <table th:if="${violations != null and !violations.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Ref</th>
+                        <th>Vehicle</th>
+                        <th>Spot</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Reported By</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="v : ${violations}">
+                        <td th:text="${v.violationId}">VIO-XXXX</td>
+                        <td th:text="${v.vehicleId}">KA01AB1234</td>
+                        <td th:text="${v.spotId}">F1-C1</td>
+                        <td th:text="${v.description}">Description</td>
+                        <td th:text="${v.status}">OPEN</td>
+                        <td th:text="${v.reportedBy}">guard@parkmanager.com</td>
+                        <td th:text="${v.timestamp}">2026-01-01</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${violations == null or violations.isEmpty()}" class="muted">No violations available.</p>
+        </section>
+
+        <section class="panel">
+            <h2 style="font-size: 18px;">Lost Ticket Cases</h2>
+            <table th:if="${lostTicketCases != null and !lostTicketCases.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Case</th>
+                        <th>Ticket</th>
+                        <th>Spot</th>
+                        <th>User</th>
+                        <th>Vehicle</th>
+                        <th>Handled By</th>
+                        <th>Notes</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${lostTicketCases}">
+                        <td th:text="${c.caseId}">LTC-XXXX</td>
+                        <td th:text="${c.ticketId}">TKT-XXXX</td>
+                        <td th:text="${c.spotId}">F1-C1</td>
+                        <td th:text="${c.userEmail}">driver@example.com</td>
+                        <td th:text="${c.vehicleId}">KA01AB1234</td>
+                        <td th:text="${c.handledBy}">attendant@parkmanager.com</td>
+                        <td th:text="${c.notes}">Notes</td>
+                        <td th:text="${c.timestamp}">2026-01-01</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${lostTicketCases == null or lostTicketCases.isEmpty()}" class="muted">No lost ticket cases available.</p>
+        </section>
+
+        <section class="panel">
+            <h2 style="font-size: 18px;">Active Parking Sessions</h2>
+            <p class="muted">Sessions with status RESERVED, PAID, or OCCUPIED that have not expired yet.</p>
+
+            <form action="/admin/incidents/session-search" method="post" class="lookup-form">
+                <input type="text" name="vehicleId" maxlength="20" placeholder="Search by vehicle ID" required>
+                <button type="submit">Find Session</button>
+            </form>
+
+            <p class="lookup-error" th:if="${activeSessionLookupError != null}" th:text="${activeSessionLookupError}">Invalid vehicle ID.</p>
+
+            <table th:if="${activeSessionLookupResult != null}">
+                <thead>
+                    <tr>
+                        <th colspan="6">Lookup Result</th>
+                    </tr>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Vehicle</th>
+                        <th>User</th>
+                        <th>Spot</th>
+                        <th>Status</th>
+                        <th>Expiry (ms)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td th:text="${activeSessionLookupResult.ticketId}">TKT-XXXX</td>
+                        <td th:text="${activeSessionLookupResult.vehicleId}">KA01AB1234</td>
+                        <td th:text="${activeSessionLookupResult.userEmail}">driver@example.com</td>
+                        <td th:text="${activeSessionLookupResult.spotId}">F1-C1</td>
+                        <td th:text="${activeSessionLookupResult.status}">OCCUPIED</td>
+                        <td th:text="${activeSessionLookupResult.expiryTimeMillis}">0</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${activeSessionLookupVehicle != null and activeSessionLookupResult == null and activeSessionLookupError == null}" class="muted">
+                No active session found for <strong th:text="${activeSessionLookupVehicle}">KA01AB1234</strong>.
+            </p>
+
+            <table th:if="${activeSessions != null and !activeSessions.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Vehicle</th>
+                        <th>User</th>
+                        <th>Spot</th>
+                        <th>Status</th>
+                        <th>Entry (ms)</th>
+                        <th>Expiry (ms)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${activeSessions}">
+                        <td th:text="${s.ticketId}">TKT-XXXX</td>
+                        <td th:text="${s.vehicleId}">KA01AB1234</td>
+                        <td th:text="${s.userEmail}">driver@example.com</td>
+                        <td th:text="${s.spotId}">F1-C1</td>
+                        <td th:text="${s.status}">OCCUPIED</td>
+                        <td th:text="${s.entryTimeMillis}">0</td>
+                        <td th:text="${s.expiryTimeMillis}">0</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${activeSessions == null or activeSessions.isEmpty()}" class="muted">No active parking sessions currently.</p>
+        </section>
+
+        <section class="panel">
+            <h2 style="font-size: 18px;">Gate Override Logs</h2>
+            <table th:if="${gateOverrides != null and !gateOverrides.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Ref</th>
+                        <th>Gate</th>
+                        <th>Action</th>
+                        <th>Reason</th>
+                        <th>By</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="g : ${gateOverrides}">
+                        <td th:text="${g.logId}">GATE-XXXX</td>
+                        <td th:text="${g.gateId}">G1</td>
+                        <td th:text="${g.action}">OPEN</td>
+                        <td th:text="${g.reason}">Reason</td>
+                        <td th:text="${g.overriddenBy}">guard@parkmanager.com</td>
+                        <td th:text="${g.timestamp}">2026-01-01</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p th:if="${gateOverrides == null or gateOverrides.isEmpty()}" class="muted">No gate overrides available.</p>
+        </section>
+    </main>
+</body>
+</html>

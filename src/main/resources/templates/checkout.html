@@ -60,6 +60,22 @@
         }
         .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .detail-row:last-child { margin-bottom: 0; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); color: var(--text-muted); font-size: 13px;}
+        .mapping-list {
+            margin-top: 12px;
+            display: grid;
+            gap: 8px;
+        }
+        .mapping-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-main);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
         
         .pay-btn { 
             background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent)); 
@@ -110,15 +126,30 @@
                 <span>Slot IDs</span>
                 <span th:text="${selectedSpots}"></span>
             </div>
+            <div class="detail-row">
+                <span>Vehicle Type</span>
+                <span th:text="${vehicleType}"></span>
+            </div>
+            <div class="mapping-list">
+                <div class="mapping-item" th:each="selection : ${selections}">
+                    <span th:text="${selection.spotId}">F1-C1</span>
+                    <strong th:text="${selection.vehicleId}">KA01AB1234</strong>
+                </div>
+            </div>
         </div>
         
         <form th:action="@{/payment}" method="post">
-            <input type="hidden" name="selectedSpots" th:value="${selectedSpots}" />
+            <th:block th:each="selection : ${selections}">
+                <input type="hidden" name="spotIds" th:value="${selection.spotId}" />
+                <input type="hidden" name="vehicleIds" th:value="${selection.vehicleId}" />
+            </th:block>
+            <input type="hidden" name="vehicleType" th:value="${vehicleType}" />
             <input type="hidden" name="hours" th:value="${hours}" />
             <button type="submit" class="pay-btn">Confirm & Pay Using Secure Gateway</button>
         </form>
         
         <a href="/spots" class="cancel-link">Cancel and return to map</a>
+    </div>
     </div>
 
 </body>

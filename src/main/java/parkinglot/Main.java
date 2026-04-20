@@ -43,8 +43,8 @@ public class Main {
         
         // 4. Register a Driver (UC-01)
         System.out.println("\n--- Driver Registration ---");
-        Driver driver = new Driver("D001", "Mihir", "mihir@example.com", "9876543210", 
-                                   "password123", "KA-01-AB-1234", "DL-98765", "1234-5678-9012");
+        new Driver("D001", "Mihir", "mihir@example.com", "9876543210",
+            "password123", "KA-01-AB-1234", "DL-98765", "1234-5678-9012");
         System.out.println("Driver Mihir registered successfully.");
         
         // 5. Book a Spot (UC-04) & Generate Ticket (UC-07)
@@ -54,7 +54,7 @@ public class Main {
             System.out.println("Spot " + firstSpotForTest.getId() + " Status: RESERVED");
             firstFloorForTest.updateDisplay(); // Triggers DisplayBoard observer
             
-            Ticket ticket = new Ticket("T001", firstSpotForTest);
+            new Ticket("T001", firstSpotForTest);
             System.out.println("Ticket T001 generated.");
             
             // 6. Process Payment (Strategy Pattern) - Redirects to secure site (UC-11)

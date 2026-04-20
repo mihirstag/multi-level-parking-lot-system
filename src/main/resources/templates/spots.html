@@ -64,6 +64,43 @@
             border-color: rgba(255, 107, 107, 0.3);
         }
 
+        .vehicle-type-panel {
+            background: var(--surface-color);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 24px;
+            display: grid;
+            gap: 8px;
+            max-width: 560px;
+        }
+        .vehicle-type-panel label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+            font-weight: 700;
+        }
+        .vehicle-type-panel select {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-main);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+        }
+        .vehicle-type-panel select:focus {
+            border-color: rgba(102, 252, 241, 0.5);
+            box-shadow: 0 0 0 2px rgba(102, 252, 241, 0.2);
+        }
+        .vehicle-type-panel p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
         /* Floors Grid */
         .floor-container { 
             background: var(--surface-color); backdrop-filter: blur(10px);
@@ -90,6 +127,7 @@
         
         .AVAILABLE { background: var(--available); border: 1px solid var(--available-border); color: var(--primary-accent); }
         .AVAILABLE:hover { background: rgba(102, 252, 241, 0.2); transform: scale(1.05); box-shadow: 0 0 15px rgba(102, 252, 241, 0.2); }
+        .AVAILABLE.TYPE_MATCH { box-shadow: 0 0 14px rgba(102, 252, 241, 0.22); }
         
         .SELECTED { background: var(--primary-accent); color: var(--bg-color); border: 1px solid var(--primary-accent); transform: scale(1.05); box-shadow: 0 0 20px var(--primary-glow); }
         
@@ -107,10 +145,45 @@
         .cart-info .detail { font-size: 20px; font-weight: 700; color: var(--primary-accent); }
         .cart-info .list { font-size: 13px; color: var(--text-muted); margin-top: 4px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         
-        .cart-controls { display: flex; gap: 24px; align-items: center; }
+        .cart-controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
         .duration-picker { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 30px; border: 1px solid var(--surface-border);}
         .duration-picker label { font-size: 14px; color: var(--text-muted); font-weight: 500;}
         .duration-picker input { background: transparent; border: none; color: white; width: 40px; font-size: 16px; font-weight: 600; text-align: center; outline: none; }
+
+        .vehicle-rows {
+            display: grid;
+            gap: 8px;
+            min-width: 340px;
+            max-height: 180px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .spot-vehicle-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--surface-border);
+        }
+        .spot-vehicle-row span {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 700;
+            min-width: 72px;
+        }
+        .spot-vehicle-row input {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            width: 180px;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            text-transform: uppercase;
+        }
+        .spot-vehicle-row input::placeholder { color: #7f8695; }
         
         .btn-checkout { background: linear-gradient(135deg, var(--primary-accent), #45a29e); color: var(--bg-color); border: none; padding: 14px 32px; border-radius: 30px; cursor: pointer; font-weight: 700; font-size: 15px; box-shadow: 0 4px 15px var(--primary-glow); transition: 0.3s; }
         .btn-checkout:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--primary-glow); }
@@ -138,7 +211,18 @@
     <div class="main-container">
         <div class="title-area">
             <h1>Select <span>Spots</span></h1>
-            <p>Tap available spots to add them to your reservation queue. Booked spots are automatically removed from this view.</p>
+            <p>Step 1: choose vehicle type. Step 2: select matching spots. Step 3: provide one vehicle number for each selected spot.</p>
+        </div>
+
+        <div class="vehicle-type-panel">
+            <label for="vehicle-type-selector">Vehicle Type</label>
+            <select id="vehicle-type-selector" required>
+                <option value="">-- Select your vehicle type --</option>
+                <option th:each="type : ${vehicleTypes}"
+                        th:value="${type.name()}"
+                        th:text="${#strings.replace(type.name(), '_', ' ')}">COMPACT</option>
+            </select>
+            <p>Only spots allocated for the selected type will be shown and can be booked in this checkout.</p>
         </div>
 
         <div th:if="${param.bookError != null}" class="notice notice-warn">Unable to reserve that spot. It may already be booked.</div>
@@ -158,7 +242,7 @@
                         th:if="${spot.free}" 
                         class="spot-btn AVAILABLE" 
                         th:text="${spot.id}"
-                        th:attr="onclick=|toggleSpot('${spot.id}', this)|">
+                        th:attr="onclick=|toggleSpot('${spot.id}', this)|,data-spot-type=${spot.type.name()}">
                 </button>
             </div>
         </div>
@@ -172,7 +256,9 @@
         </div>
         
         <form action="/checkout" method="post" class="cart-controls">
-            <input type="hidden" name="selectedSpots" id="selected-spots-input" required>
+            <input type="hidden" name="vehicleType" id="vehicle-type-input" required>
+            <div id="spot-hidden-inputs"></div>
+            <div class="vehicle-rows" id="vehicle-inputs-container"></div>
             <div class="duration-picker">
                 <label for="hours">Duration (hrs)</label>
                 <input type="number" name="hours" id="hours" min="1" max="24" value="1" required>
@@ -183,11 +269,74 @@
 
     <script>
         let selectedSpots = [];
+        let selectedVehicleType = "";
+        const spotVehicleMap = {};
+
+        const vehicleTypeSelector = document.getElementById('vehicle-type-selector');
+        const vehicleTypeInput = document.getElementById('vehicle-type-input');
+
+        vehicleTypeSelector.addEventListener('change', function() {
+            selectedVehicleType = this.value;
+            vehicleTypeInput.value = selectedVehicleType;
+            clearSelections();
+            applyVehicleTypeFilter();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            applyVehicleTypeFilter();
+        });
+
+        function clearSelections() {
+            document.querySelectorAll('.spot-btn.SELECTED').forEach((btn) => {
+                btn.classList.remove('SELECTED');
+            });
+
+            selectedSpots = [];
+            Object.keys(spotVehicleMap).forEach((key) => {
+                delete spotVehicleMap[key];
+            });
+            updateCart();
+        }
+
+        function applyVehicleTypeFilter() {
+            const allSpotButtons = document.querySelectorAll('.spot-btn');
+            allSpotButtons.forEach((btn) => {
+                btn.classList.remove('TYPE_MATCH');
+                btn.classList.remove('SELECTED');
+
+                if (!selectedVehicleType) {
+                    btn.style.display = 'none';
+                    btn.disabled = true;
+                    return;
+                }
+
+                if (btn.dataset.spotType === selectedVehicleType) {
+                    btn.style.display = 'flex';
+                    btn.disabled = false;
+                    btn.classList.add('TYPE_MATCH');
+                } else {
+                    btn.style.display = 'none';
+                    btn.disabled = true;
+                }
+            });
+
+            updateCart();
+        }
+
         function toggleSpot(spotId, btnElement) {
+            if (!selectedVehicleType) {
+                alert('Select a vehicle type before choosing spots.');
+                return;
+            }
+            if (btnElement.dataset.spotType !== selectedVehicleType) {
+                return;
+            }
+
             const index = selectedSpots.indexOf(spotId);
             if (index > -1) {
                 selectedSpots.splice(index, 1);
                 btnElement.classList.remove('SELECTED');
+                delete spotVehicleMap[spotId];
             } else {
                 selectedSpots.push(spotId);
                 btnElement.classList.add('SELECTED');
@@ -198,13 +347,48 @@
             const cart = document.getElementById('checkout-cart');
             const countSpan = document.getElementById('spot-count');
             const listDiv = document.getElementById('spot-list');
-            const hiddenInput = document.getElementById('selected-spots-input');
+            const hiddenSpotInputs = document.getElementById('spot-hidden-inputs');
+            const vehicleInputsContainer = document.getElementById('vehicle-inputs-container');
 
-            if (selectedSpots.length > 0) {
+            hiddenSpotInputs.innerHTML = '';
+            vehicleInputsContainer.innerHTML = '';
+            vehicleTypeInput.value = selectedVehicleType;
+
+            if (selectedSpots.length > 0 && selectedVehicleType) {
                 cart.style.display = 'flex'; 
                 countSpan.innerText = selectedSpots.length;
                 listDiv.innerText = selectedSpots.join(', ');
-                hiddenInput.value = selectedSpots.join(','); 
+
+                selectedSpots.forEach((spotId) => {
+                    const hiddenSpot = document.createElement('input');
+                    hiddenSpot.type = 'hidden';
+                    hiddenSpot.name = 'spotIds';
+                    hiddenSpot.value = spotId;
+                    hiddenSpotInputs.appendChild(hiddenSpot);
+
+                    const row = document.createElement('div');
+                    row.className = 'spot-vehicle-row';
+
+                    const spotLabel = document.createElement('span');
+                    spotLabel.textContent = spotId;
+                    row.appendChild(spotLabel);
+
+                    const vehicleInput = document.createElement('input');
+                    vehicleInput.type = 'text';
+                    vehicleInput.name = 'vehicleIds';
+                    vehicleInput.maxLength = 20;
+                    vehicleInput.placeholder = 'Vehicle number';
+                    vehicleInput.required = true;
+                    vehicleInput.pattern = '[A-Za-z0-9-]{3,20}';
+                    vehicleInput.value = spotVehicleMap[spotId] || '';
+                    vehicleInput.addEventListener('input', function() {
+                        this.value = this.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+                        spotVehicleMap[spotId] = this.value;
+                    });
+                    row.appendChild(vehicleInput);
+
+                    vehicleInputsContainer.appendChild(row);
+                });
             } else {
                 cart.style.display = 'none';
             }

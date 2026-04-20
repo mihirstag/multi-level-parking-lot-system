@@ -69,8 +69,11 @@
             padding: 8px 16px; border-radius: 30px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
         }
         .status-paid { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2); }
+        .status-occupied { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2); }
         .status-reserved { background: rgba(102, 252, 241, 0.1); color: var(--primary-accent); border: 1px solid rgba(102, 252, 241, 0.2); }
         .status-expired { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.2); }
+        .status-closed { background: rgba(149, 165, 166, 0.14); color: #bdc3c7; border: 1px solid rgba(189, 195, 199, 0.3); }
+        .status-lost_ticket { background: rgba(241, 196, 15, 0.14); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.3); }
 
         .empty-state { text-align: center; padding: 60px 0; color: var(--text-muted); }
         .empty-state h3 { font-size: 20px; color: var(--text-main); margin-bottom: 10px;}
@@ -111,6 +114,7 @@
                     <div class="b-ticket" th:text="${ticket.ticketId}">TKT-XXXXXX</div>
                     <div class="b-spot" th:text="'Spot ' + ${ticket.spotId}">Spot F1-C1</div>
                     <div class="b-time" th:text="${ticket.timestamp}">2026-03-XX</div>
+                    <div class="b-vehicle" th:text="'Vehicle: ' + ${ticket.vehicleId}">Vehicle: KA01AB1234</div>
                     <div th:if="${ticket.paymentMethod != null}" class="b-payment" th:text="'Payment: ' + ${ticket.paymentMethod}">Payment: CREDIT_CARD</div>
                     <div th:if="${ticket.bankCode != null}" class="b-code" th:text="'Code: ' + ${ticket.bankCode}">Code: 123456</div>
                 </div>

@@ -4,6 +4,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
+import parkinglot.transactions.CashPayment;
 import parkinglot.transactions.CreditCardPayment;
 import parkinglot.transactions.NetBankingPayment;
 import parkinglot.transactions.Payment;
@@ -28,8 +29,10 @@ public class PaymentProcessorAdapter {
         } else if ("NET_BANKING".equals(method)) {
             validateNetBanking(paymentRequest);
             payment.setStrategy(new NetBankingPayment(paymentRequest.getBank(), paymentRequest.getBankCode()));
+        } else if ("CASH".equals(method)) {
+            payment.setStrategy(new CashPayment());
         } else {
-            throw new IllegalArgumentException("Unsupported payment method.");
+            throw new IllegalArgumentException("Unsupported payment method. Use CREDIT_CARD, NET_BANKING, or CASH.");
         }
 
         return payment.processPayment();

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Control Room - Park Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: rgba(30, 31, 38, 0.62);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --primary-accent: #66fcf1;
+            --secondary-accent: #45a29e;
+            --text-main: #ffffff;
+            --text-muted: #8b8e98;
+            --warn: #ffb36b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 12% 15%, rgba(102, 252, 241, 0.08), transparent 42%),
+                              radial-gradient(circle at 88% 80%, rgba(255, 179, 107, 0.08), transparent 40%);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 6%;
+            background: rgba(11, 12, 16, 0.62);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: var(--text-main); text-decoration: none; }
+        .logo span { color: var(--primary-accent); }
+        .nav-links { display: flex; gap: 32px; font-size: 15px; font-weight: 500; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; transition: 0.25s; }
+        .nav-links a.active, .nav-links a:hover { color: var(--primary-accent); }
+        .btn-outline-danger {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .main {
+            width: min(980px, 92vw);
+            margin: 44px auto 60px;
+            display: grid;
+            gap: 22px;
+        }
+
+        .hero {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 22px;
+            padding: 28px;
+        }
+        .hero h1 { font-size: 28px; margin-bottom: 8px; }
+        .hero p { color: var(--text-muted); line-height: 1.45; }
+        .badge {
+            margin-top: 14px;
+            display: inline-flex;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 179, 107, 0.3);
+            color: var(--warn);
+            background: rgba(255, 179, 107, 0.1);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--surface-color);
+            border: 1px solid var(--surface-border);
+            border-radius: 18px;
+            padding: 20px;
+        }
+        .card h3 { margin-bottom: 8px; }
+        .card p { color: var(--text-muted); font-size: 14px; line-height: 1.45; }
+
+        .cta {
+            margin-top: 14px;
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+            color: #0b0c10;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 10px 14px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">Park<span> Manager</span></a>
+        <div class="nav-links">
+            <a href="/dashboard/admin" class="active">Dashboard</a>
+            <a href="/admin/incidents">Incident Center</a>
+        </div>
+        <div>
+            <span style="font-size: 14px; color: var(--text-muted); margin-right: 14px;" th:text="${session.userEmail}"></span>
+            <a href="/logout" class="btn-outline-danger">Sign Out</a>
+        </div>
+    </nav>
+
+    <main class="main">
+        <section class="hero">
+            <h1 th:text="${systemName}">Admin Control Room</h1>
+            <p th:text="${welcomeMessage}">Welcome, admin.</p>
+            <div class="badge">Role: Administrator</div>
+        </section>
+
+        <section class="grid">
+            <article class="card">
+                <h3>Incident Oversight</h3>
+                <p>Review all violation reports, lost ticket cases, and gate override logs from one place.</p>
+                <a class="cta" href="/admin/incidents">Open Incident Center</a>
+            </article>
+
+            <article class="card">
+                <h3>Audit Visibility</h3>
+                <p>Track who performed each operation and when it happened for accountability.</p>
+                <a class="cta" href="/admin/incidents">View Audit Trail</a>
+            </article>
+
+            <article class="card">
+                <h3>Operations Health</h3>
+                <p>Use role dashboards to delegate frontline actions to attendant and security teams.</p>
+                <a class="cta" href="/dashboard/admin">Refresh Dashboard</a>
+            </article>
+        </section>
+    </main>
+</body>
+</html>

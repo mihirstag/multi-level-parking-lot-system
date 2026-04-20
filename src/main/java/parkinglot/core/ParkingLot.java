@@ -35,6 +35,11 @@ public class ParkingLot {
         }
         return totalFreeSpots;
     }
+
+    public String getAddress() {
+        return address;
+    }
+
     public List<ParkingFloor> getFloors() {
         return floors;
     }
